@@ -1,6 +1,6 @@
 #!/bin/bash
 MARKER=${MARKER:-ssh_enabled}
-. ./gensokyo.conf
+. ./rumia.conf
 echo -e "\e[1;36;44m ****** Выполняем команду \"$@\". ****** \e[0m"
 for SCRIPTDIR in `ls $COMPUTERS_D`
 do
