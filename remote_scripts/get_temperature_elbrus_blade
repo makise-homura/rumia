@@ -1,0 +1,51 @@
+#!/bin/sh
+
+[ -d /sys/class/i2c-adapter/i2c-0/0-0018/ ] || echo max6695 0x18 >  /sys/class/i2c-adapter/i2c-0/new_device
+[ -d /sys/class/i2c-adapter/i2c-1/1-006a/ ] || echo max34440 0x6a > /sys/class/i2c-adapter/i2c-1/new_device
+
+# AIRFLOW = max34440 temp1 Internal Temperature Sensor
+# AIR IN  = max34440 temp2 External DS75LV Temperature Sensor with Address 0
+# AIR OUT = max34440 temp3 External DS75LV Temperature Sensor with Address 1
+# NOTHING = max34440 temp4 External DS75LV Temperature Sensor with Address 2
+# NOTHING = max34440 temp5 External DS75LV Temperature Sensor with Address 3
+# NOTHING = max34440 temp6 External MAX6695 Local Temperature Sensor
+# CPU A   = max34440 temp7 External MAX6695 Remote Diode 1 Temperature Sensor
+# CPU B   = max34440 temp8 External MAX6695 Remote Diode 2 Temperature Sensor
+# NOTHING = max6695  temp1 MAX6695 Local Temperature Sensor
+# CPU C   = max6695  temp2 MAX6695 Remote Diode 1 Temperature Sensor
+# CPU D   = max6695  temp3 MAX6695 Remote Diode 2 Temperature Sensor
+
+addpath_18=""
+addpath_6a=""
+[ -f /sys/class/i2c-dev/i2c-0/device/0-0018/hwmon/hwmon?/temp1_input ] || addpath_18="device/"
+[ -f /sys/class/i2c-dev/i2c-1/device/1-006a/hwmon/hwmon?/temp1_input ] || addpath_6a="device/"
+
+case $1
+in
+    0)
+        t=`cat /sys/class/i2c-dev/i2c-1/device/1-006a/hwmon/hwmon?/${addpath_6a}temp7_input`
+    ;;
+    1)
+        t=`cat /sys/class/i2c-dev/i2c-1/device/1-006a/hwmon/hwmon?/${addpath_6a}temp8_input`
+    ;;
+    2)
+        t=`cat /sys/class/i2c-dev/i2c-0/device/0-0018/hwmon/hwmon?/${addpath_18}temp2_input`
+    ;;
+    3)
+        t=`cat /sys/class/i2c-dev/i2c-0/device/0-0018/hwmon/hwmon?/${addpath_18}temp3_input`
+    ;;
+    4)
+        t=`cat /sys/class/i2c-dev/i2c-1/device/1-006a/hwmon/hwmon?/${addpath_6a}temp2_input`
+    ;;
+    5)
+        t=`cat /sys/class/i2c-dev/i2c-1/device/1-006a/hwmon/hwmon?/${addpath_6a}temp1_input`
+    ;;
+    6)
+        t=`cat /sys/class/i2c-dev/i2c-1/device/1-006a/hwmon/hwmon?/${addpath_6a}temp3_input`
+    ;;
+    *)
+        t=99900
+    ;;
+esac
+
+echo "scale = 1; $t / 1000" | bc

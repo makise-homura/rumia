@@ -1,13 +1,14 @@
 #!/bin/sh
-lsmod | grep -q coretemp || test -f /lib/modules/`uname -r`/kernel/drivers/hwmon/coretemp.ko && modprobe coretemp
+modprobe l_pcs
 for mon in /sys/class/hwmon/*
 do
     [ -f ${mon}/name ] || continue
     name=`cat ${mon}/name`
-    [ "${name}" = "coretemp" ] || continue
+    [ "${name}" = "l_pcs" ] || continue
+    [ "`cat ${mon}/node`" = "$1" ] || continue
     for sensor in ${mon}/temp*_label
     do
-        [ "`cat $sensor`" = "Core $1" ] || continue
+        [ "`cat $sensor`" = "Node $1 Max" -o "`cat $sensor`" = "CurrMax" ] || continue
         trueinput=`echo $sensor | sed 's/_label$/_input/'`
         echo "scale = 1; `cat ${trueinput}` / 1000" | bc
         exit 0

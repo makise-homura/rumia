@@ -12,7 +12,7 @@
 DEVICE="$1"
 LAST_SECTOR=100000000 # Test until 51.2 GB
 
-if [ ! -b "$DEVICE " ]
+if [ ! -b "$DEVICE" ]
 then
     echo "Block device $DEVICE does not exist."
     exit 2

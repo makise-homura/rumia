@@ -1,0 +1,17 @@
+#!/bin/sh
+i=`echo "$1 + 1" | bc`
+truemon=""
+for mon in `ls /sys/class/hwmon`
+do
+    name=`cat /sys/class/hwmon/${mon}/name`
+    if [ "${name}" = "sun4i_ts" ]
+    then
+        truemon=/sys/class/hwmon/${mon}
+    fi
+done
+if [ -z "${truemon}" ]
+then
+    echo "99.9"
+    exit 1
+fi
+echo "scale = 1; `cat ${truemon}/temp${i}_input` / 1000" | bc
