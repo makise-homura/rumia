@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "scale = 1; `cat /sys/devices/virtual/thermal/thermal_zone${1}/temp` / 1000" | bc

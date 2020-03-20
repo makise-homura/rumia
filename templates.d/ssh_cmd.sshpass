@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh -l root $MACHINE -C $@"

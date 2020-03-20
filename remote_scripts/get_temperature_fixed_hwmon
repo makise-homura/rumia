@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "scale = 1; `cat /sys/class/hwmon/hwmon${i}/temp1_input` / 1000" | bc

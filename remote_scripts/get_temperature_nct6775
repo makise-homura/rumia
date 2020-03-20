@@ -1,0 +1,44 @@
+#!/bin/sh
+modprobe nct6775
+
+for mon in `ls /sys/class/hwmon`
+do
+    name=`cat /sys/class/hwmon/${mon}/name`
+    if [ "${name}" = "nct6795" ]
+    then
+        truemon=/sys/class/hwmon/${mon}
+    fi
+done
+
+if [ -z "${truemon}" ]
+then
+    echo "99.9"
+    exit 1
+fi
+
+cnt=0
+[ "$1" ] && cnt="$1"
+
+cnt=`echo $cnt + 1 | bc`
+for label in "CPUTIN" "SYSTIN" "AUXTIN1" "AUXTIN2" "SMBUSMASTER 0" "AUXTIN0"
+do
+    cnt=`echo $cnt - 1 | bc`
+    [ $cnt -eq 0 ] && break
+done
+
+if [ $cnt -ne 0 ]
+then
+    echo "99.9"
+    exit 1
+fi
+
+for caption in $truemon/temp*_label
+do
+    if [ "$label" == "`cat $caption`" ]
+    then
+        num=`echo $caption | sed 's/_label/_input/'`
+        break
+    fi
+done
+
+echo "scale = 1; `cat $num` / 1000" | bc

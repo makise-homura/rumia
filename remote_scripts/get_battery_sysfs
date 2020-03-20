@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# This script reads battery charge percentage from Linux sysfs device BAT0
+# (at least on some laptops) and prints it as a decimal value from 0 to 100.
+# If failed, prints 0.
+
+FILE=/sys/class/power_supply/BAT0/capacity
+[ -f $FILE ] && cat $FILE || echo 0

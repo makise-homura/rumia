@@ -1,0 +1,220 @@
+#!/bin/bash
+
+RUMIA_VERSION="0.1"
+
+. ./rumia.conf
+
+LANGFILE="$PREFIX/language.$RUMIA_LANG"
+if [ ! -f $LANGFILE ]
+then
+    echo "No language file $LANGFILE found, terminating."
+    exit 15
+fi
+
+. $LANGFILE
+
+ENABLE_CLEAR="yes"
+ENABLE_FANCYNAMES="yes"
+ONESHOT="no"
+for parameter in $@
+do
+    [ "$parameter" = "--nofancynames" ] && ENABLE_FANCYNAMES="no"
+    [ "$parameter" = "--oneshot" ]      && ENABLE_ONESHOT="yes"
+    [ "$parameter" = "--noclear" ]      && ENABLE_CLEAR="no"
+done
+
+DELAYPID=""
+trap "restart" SIGUSR1
+restart()
+{
+    if [ "$DELAYPID" ]
+    then
+        [ "$ENABLE_CLEAR" = "yes" ] && clear
+        kill -INT $DELAYPID
+    fi
+}
+
+trap "quit" SIGINT
+quit()
+{
+    [ "$DELAYPID" ] && kill -INT $DELAYPID
+    echo
+    echo "$MSG_SIGINT"
+    exit 0
+}
+
+# Computer directory must/may be populated with:
+#   output scripts (print text value): uptime_cmd, tempget_cmd, battery_cmd
+#   checker scripts (return code): ping_cmd (mandatory), gethdd_cmd
+#   textfiles: fancyname, temp_nodes, temp_alert, temp_crit, vpngw_port
+#   markers: temp_enabled, ssh_enabled, absent
+# Scripts may use:
+#   exports: MACHINE, SCRIPTPATH
+
+MYPID="$$"
+pidlength=`echo -n $MYPID | wc -c`
+padding=""
+for i in `seq 4 -1 $pidlength` ; do padding=" $padding"; done
+MYPID="${padding}$MYPID"
+[ "$ENABLE_CLEAR" = "yes" ] && clear
+
+if [ "$MACHINES" ]
+then
+    savemachines="yes"
+    NEWMACHINES=""
+    for machine in $MACHINES
+    do
+        newmachine=`ls $COMPUTERS_D | grep -- "-$machine\$"`
+        NEWMACHINES="$NEWMACHINES $newmachine"
+    done
+    MACHINES="$NEWMACHINES"
+else
+    savemachines="no"
+fi
+
+while true
+do
+    [ "$ENABLE_CLEAR" = "yes" ] && echo -ne "\e[H\n"
+    if [ "$ENABLE_ONESHOT" = "yes" ]
+    then
+        echo "  ╔═ RUMIA v$RUMIA_VERSION ═══════════════════════════════════════════════════════════════════╗"
+    else
+        echo -e "  ╔═ RUMIA v$RUMIA_VERSION ═════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
+    fi
+    echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
+    echo "  ╟────────────────────────────────────────────────────────────────────────────────╢"
+    log_str="`date`"
+    [ "$savemachines" = "no" ] && MACHINES="`ls $COMPUTERS_D`"
+    for SCRIPTDIR in $MACHINES
+    do
+        SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
+        MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
+        if [ -e $SCRIPTPATH/temp_enabled ]
+        then
+            export MACHINE
+            export SCRIPTPATH
+
+            # Show fancy name
+            if [ "$ENABLE_FANCYNAMES" = "yes" -a -e "$SCRIPTPATH/fancyname" ]
+            then
+                machine_name=`cat $SCRIPTPATH/fancyname`
+            else
+                machine_name=$MACHINE
+            fi
+            machine_nodes=""
+            if [ -e $SCRIPTPATH/temp_nodes ]
+            then
+                machine_nodes=`cat $SCRIPTPATH/temp_nodes`
+                [ "$machine_nodes" ] && if [ "$machine_nodes" -gt 0 ]
+                then
+                    machine_alert=`cat $SCRIPTPATH/temp_alert`
+                    machine_crit=`cat $SCRIPTPATH/temp_crit`
+                fi
+            fi
+            echo -ne "                                                                                   ║\r  ║  $machine_name\r\e[14C"
+
+            # Check if we have all required tools
+            CONDITIONS_MET="yes"
+            if [ -f "$SCRIPTPATH/require" ]
+            then
+                for requirement in `cat $SCRIPTPATH/require`
+                do
+                    cmd_path=`which $requirement 2>/dev/null`
+                    if [ ! "$cmd_path" ]
+                    then
+                        CONDITIONS_MET="no"
+                    else
+                        [ ! -x "$cmd_path" ] && CONDITIONS_MET="no"
+                    fi
+                done
+            fi
+            if [ "$CONDITIONS_MET" = "no" ]
+            then
+                echo -e "\e[1;31m$MSG_REQUIREMENT_MISSING $requirement.\e[0m"
+                continue
+            fi
+
+            # Check availability
+            if $SCRIPTPATH/ping_cmd
+            then
+
+                # Check uptime
+                struptime=""
+                if [ -x $SCRIPTPATH/uptime_cmd ]
+                then
+                    struptime=`$SCRIPTPATH/uptime_cmd 2>/dev/null | sed "$MSG_UPTIME_REGEXP"`
+                    [ -z "$struptime" ] && struptime="\e[1;31m$MSG_UNKNOWN\e[0m"
+                fi
+                echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
+
+                # Check HDD
+                cmdgethdd=""
+                if [ -x $SCRIPTPATH/gethdd_cmd ]
+                then
+                    if $SCRIPTPATH/gethdd_cmd
+                    then
+                        echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
+                    else
+                        echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
+                    fi
+                else
+                    echo -ne "     "
+                fi
+
+                # Check temperatures and battery level
+                if [ "$machine_nodes" ]
+                then
+                    max_node=`echo $machine_nodes - 1 | bc`
+                    for node in `seq 0 6`
+                    do
+                        if [ ! $node -gt $max_node -a -x $SCRIPTPATH/tempget_cmd ]
+                        then
+                            # Temperature
+                            temp=`$SCRIPTPATH/tempget_cmd $node 2>/dev/null`
+                            [ -z "$temp" ] && temp="99.9"
+                            echo $temp | grep -qe '\.' || temp=$temp.0
+                            inttemp=`echo $temp | cut -d"." -f1`
+                            temp=`echo $temp | head -c4`
+                            color="0"
+                            [ $inttemp -ge $machine_alert ] && color="1;33"
+                            [ $inttemp -ge $machine_crit ] && color="1;31"
+                            echo -ne " \e[${color}m${temp}\e[0m "
+                            log_str="$log_str\t$MACHINE:$node=$temp"
+                        else
+                            # Battery level
+                            if [ $node -eq 6 ]
+                            then
+                                if [ -x $SCRIPTPATH/battery_cmd ]
+                                then
+                                    $SCRIPTPATH/battery_cmd
+                                else
+                                    echo -n " ---- "
+                                fi
+                            else
+                                echo -n " ---- "
+                            fi
+                        fi
+                    done
+                    echo ""
+                else
+                    echo " ----  ----  ----  ----  ----  ----  ---- "
+                fi
+            else
+                if [ -e $SCRIPTPATH/absent ]
+                then
+                    echo -ne "\e[1;34m$MSG_SLEEPING"
+                else
+                    echo -ne "\e[1;31m$MSG_DEAD"
+                fi
+                echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ---- "
+            fi
+        fi
+    done
+    echo "  ╚════════════════════════════════════════════════════════════════════════════════╝"
+    [ "$ENABLE_ONESHOT" = "yes" ] && break
+    [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE
+    sleep $DELAY &
+    DELAYPID=$!
+    wait $DELAYPID
+    DELAYPID=""
+done

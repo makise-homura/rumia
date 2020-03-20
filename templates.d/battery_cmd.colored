@@ -1,0 +1,8 @@
+#!/bin/sh
+command=`$SCRIPTPATH/ssh_cmd sudo get_battery`
+rawbatval=`$command`
+[ $rawbatval -gt 99 ] && batval="$rawbatval%" || batval="$rawbatval %"
+color="36"
+[ $rawbatval -le 50 ] && color="1;33"
+[ $rawbatval -le 20 ] && color="1;31"
+echo -ne " \e[${color}m${batval}\e[0m "

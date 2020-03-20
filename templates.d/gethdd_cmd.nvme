@@ -1,0 +1,2 @@
+#!/bin/sh
+`$SCRIPTPATH/ssh_cmd sudo get_hdd_state /dev/nvme0n1` 1>/dev/null 2>/dev/null

@@ -1,0 +1,2 @@
+#!/bin/sh
+`$SCRIPTPATH/ssh_cmd uptime`

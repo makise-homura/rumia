@@ -1,0 +1,5 @@
+PREFIX=${PREFIX:-/opt/rumia}
+COMPUTERS_D=${COMPUTERS_D:-$PREFIX/computers.d}
+LOGFILE=${LOGFILE:-$PREFIX/temperatures.log}
+RUMIA_LANG=${RUMIA_LANG:-ru_RU}
+DELAY=${DELAY:-600}

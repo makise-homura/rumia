@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# This script checks if first sectors of the drive was cyclically overwritten
+# by the contents of the first sector (it can occur on machines with unstable
+# working CPU or RAM). It prints OK and returns 0 if drive is OK, and prints
+# how much of HDD is overwritten and returns 1 if the event of such overwrite
+# had took place.
+# If device is not exist, tells about that and returns 2.
+
+# Drive block device is the first parameter of this script.
+
+DEVICE="$1"
+LAST_SECTOR=100000000 # Test until 51.2 GB
+
+if [ ! -b "$DEVICE " ]
+then
+    echo "Block device $DEVICE does not exist."
+    exit 2
+fi
+
+md5_sector()
+{
+    dd if=$DEVICE iflag=direct bs=512 count=1 skip=$1 2>/dev/null | md5sum -b | cut -d" " -f1
+}
+
+
+md5_different()
+{
+    MD5_CHK=`md5_sector $1`
+    if [ $MD5_CHK == $2 ]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
+md5_same()
+{
+    if md5_different $1 $2
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
+count_mb()
+{
+    echo "$1 / 2048" | bc
+}
+
+MD5_MBR=`md5_sector 0`
+FIRST_SECTOR=1
+
+if md5_different 1 $MD5_MBR
+then
+    echo "OK"
+    exit 0
+fi
+
+if md5_same $LAST_SECTOR $MD5_MBR
+then
+    MB=`count_mb $LAST_SECTOR`
+    echo "Overwritten more than $MB MB."
+    exit 1
+fi
+
+while true
+do
+    MID_SECTOR=`echo "($FIRST_SECTOR + $LAST_SECTOR) / 2" | bc`
+
+    if md5_different $MID_SECTOR $MD5_MBR
+    then
+        LAST_SECTOR=`echo $MID_SECTOR - 1 | bc`
+    else
+        FIRST_SECTOR=`echo $MID_SECTOR + 1 | bc`
+    fi
+
+    DIFF_SECTORS=`echo $LAST_SECTOR - $FIRST_SECTOR | bc`
+
+    if [ $DIFF_SECTORS -lt 512 ]
+    then
+        break
+    fi
+done
+
+MB=`count_mb $MID_SECTOR`
+echo "Overwritten until $MB MB."
+exit 1

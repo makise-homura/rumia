@@ -1,0 +1,28 @@
+#!/bin/sh
+
+
+if [ "$1" -lt "2" ]
+then
+    i=`echo "$1 + 1" | bc`
+    wantname="atk0110"
+else
+    i="$1"
+    wantname="coretemp"
+fi
+
+for mon in `ls /sys/class/hwmon`
+do
+    name=`cat /sys/class/hwmon/${mon}/name`
+    if [ "${name}" = "${wantname}" ]
+    then
+        truemon=/sys/class/hwmon/${mon}
+    fi
+done
+
+if [ -z "${truemon}" ]
+then
+    echo "99.9"
+    exit 1
+fi
+
+echo "scale = 1; `cat ${truemon}/temp${i}_input` / 1000" | bc

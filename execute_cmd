@@ -1,0 +1,22 @@
+#!/bin/bash
+MARKER=${MARKER:-ssh_enabled}
+. ./gensokyo.conf
+echo -e "\e[1;36;44m ****** Выполняем команду \"$@\". ****** \e[0m"
+for SCRIPTDIR in `ls $COMPUTERS_D`
+do
+    export SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
+    export MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
+    if [ -e $SCRIPTPATH/$MARKER ]
+    then
+        if $SCRIPTPATH/ping_cmd
+        then
+            echo -e "\n\e[1;32m--- Выполняем команду на машине $MACHINE: ---\e[0m\n"
+            `$SCRIPTPATH/ssh_cmd $@`
+        else
+            echo -e "\n\e[1;31m--- Машина $MACHINE недоступна. ---\e[0m"
+        fi
+    else
+        echo -e "\n\e[1;33m--- Машина $MACHINE пропускается. ---\e[0m"
+    fi
+done
+echo

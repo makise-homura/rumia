@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This script reads battery charge percentage from Pocket C.H.I.P. computer
+# and prints it as a decimal value from 0 to 100.
+
+echo $(($(sudo /usr/sbin/i2cget -y -f 0 0x34 0xb9)))

@@ -1,0 +1,3 @@
+#!/bin/sh
+[ -e $SCRIPTPATH/key ] && key="-i $SCRIPTPATH/key" || key=""
+echo "ssh $key root@$MACHINE -C $@"
