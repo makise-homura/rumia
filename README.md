@@ -2,6 +2,8 @@
 
 RUMIA - Remote Unit MonItoring Application
 
+![RUMIA screenshot](rumia.png)
+
 ## Purpose
 
 This is a little but extensible, handy cross-platform BASH script that may be
@@ -25,6 +27,8 @@ the chosen remote computers.
 * anything you specify in `require` file for certain computer(s)
 
 ## Configuration
+
+### Configuring RUMIA itself
 
 You should configure `rumia.conf` file (see `rumia.conf.example` as an example)
 as following:
@@ -63,6 +67,8 @@ but you want to launch it in one shot mode with English output, you may run:
 RUMIA_LANG=en_US ./rumia --oneshot
 ```
 
+### Letting RUMIA know about remote computers
+
 For each monitored computer, a specific subdirectory should be made inside
 `computers.d` directory (there are various examples of it inside
 `computers.d.example` subdirectory of RUMIA). This directory may contain
@@ -72,15 +78,15 @@ the following files or symbolic links:
 command, and removed by `rm` (obviously).
 
     * `ssh_enabled`: Let RUMIA poll this computer at all. Every computer that
-does not have this marker is skipped while gathering information.
+    does not have this marker is skipped while gathering information.
 
     * `temp_enabled`: Let RUMIA check temperatures for a specified computer.
-Makes no sense if `ssh_enabled` doesn't exist.
+    Makes no sense if `ssh_enabled` doesn't exist.
 
     * `absent`: Let RUMIA know that this computer is intentionally absent. If
-it can't be reached by `ping_cmd`, it produces "Sleep" message in the table
-instead of "Dead", so it could be considered not a failure that needs
-attention. Makes no sense if `ssh_enabled` doesn't exist.
+    it can't be reached by `ping_cmd`, it produces "Sleep" message in the table
+    instead of "Dead", so it could be considered not a failure that needs
+    attention. Makes no sense if `ssh_enabled` doesn't exist.
 
     * other `*_enabled` files: useful when running `execute_cmd` (see below).
 
@@ -95,57 +101,59 @@ attention. Makes no sense if `ssh_enabled` doesn't exist.
     and accept the certificate.
 
     * `fancyname`: a fancy name for a computer that may be used instead of its
-hostname in the table (unless `--nofancynames` is specified, or this file
-doesn't exist). For example, it may be a short form of hostname (e.g.
-"div193-host195.organization.com" could have a fancy name of "Host 195");
-or it could be a beautifized name using symbols that are not allowed in
-a typical hostname (e.g. host "twilight-sparkle" may have fancy name of
-"Твайлайт" in Russian language). Makes no sense if `ssh_enabled` doesn't
-exist. If fancy name or generic name is longer than 8 characters, it will be
-truncated.
+    hostname in the table (unless `--nofancynames` is specified, or this file
+    doesn't exist). For example, it may be a short form of hostname (e.g.
+    "div193-host195.organization.com" could have a fancy name of "Host 195");
+    or it could be a beautifized name using symbols that are not allowed in
+    a typical hostname (e.g. host "twilight-sparkle" may have fancy name of
+    "Твайлайт" in Russian language). Makes no sense if `ssh_enabled` doesn't
+    exist. If fancy name or generic name is longer than 8 characters, it will
+    be truncated.
 
     * `temp_nodes`: Number of temperatures that are readable from a computer.
-If missing, no temperature or battery level check is performed. Usually it is
-a symlink to `../../templates.d/nodes.*` file which contain the desired number.
+    If missing, no temperature or battery level check is performed. Usually it
+    is a symlink to `../../templates.d/nodes.*` file which contain the desired
+    number.
 
-    * `temp_alert`: Alerting temperature value. Temperatures lower that that are
-shown in gray, higher (but below critical) are shown in yellow. Has no effect
-if `temp_nodes` is missing. Usually it is a symlink to
-`../../templates.d/temp_alert.*` file which contain the desired temperature.
+    * `temp_alert`: Alerting temperature value. Temperatures lower that that
+    are shown in gray, higher (but below critical) are shown in yellow. Has
+    no effect if `temp_nodes` is missing. Usually it is a symlink to
+    `../../templates.d/temp_alert.*` file which contain the desired
+    temperature.
 
-    * `temp_crit`: As above, but a critical temperature value. Temperatures higher
-that that are shown in red. Has no effect if `temp_nodes` is missing. Usually
-it is a symlink to `../../templates.d/temp_crit.*` file which contain the
-desired temperature.
+    * `temp_crit`: As above, but a critical temperature value. Temperatures
+    higher that that are shown in red. Has no effect if `temp_nodes`
+    is missing. Usually it is a symlink to `../../templates.d/temp_crit.*` file
+    which contain the desired temperature.
 
-    * `require`: A list of binaries (one for a line) which is to be checked when
-a certain computer is polled. Each of them is examined using `which` command,
-and if at least one of them isn't found, then polling of this computer
-is skipped, and the corresponding message is shown in the table.
+    * `require`: A list of binaries (one for a line) which is to be checked
+    when a certain computer is polled. Each of them is examined using `which`
+    command, and if at least one of them isn't found, then polling of this
+    computer is skipped, and the corresponding message is shown in the table.
 
     * `ssh_password`: A root password for SSH session. Has an effect only if
-`ssh_cmd` is a symlink to `ssh_cmd.sshpass`.
+    `ssh_cmd` is a symlink to `ssh_cmd.sshpass`.
 
     * `vpngw_host`: A host to which `ssh` must connect to achieve access to the
-specified computer. Has an effect only if `ssh_cmd` is a symlink to
-`ssh_cmd.gateway`, `ssh_cmd.recursive`, or `ssh_cmd.gateway+recursive` script,
-and/or `ping_cmd` is a symlink to `ping_cmd.recursive`, or
-`ping_cmd.gateway+recursive`.
+    specified computer. Has an effect only if `ssh_cmd` is a symlink to
+    `ssh_cmd.gateway`, `ssh_cmd.recursive`, or `ssh_cmd.gateway+recursive`
+    script, and/or `ping_cmd` is a symlink to `ping_cmd.recursive`, or
+    `ping_cmd.gateway+recursive`.
 
     * `vpngw_port`: A port to which `ssh` must connect to achieve access to the
-specified computer. Has an effect only if `ssh_cmd` is a symlink to
-`ssh_cmd.gateway` or `ssh_cmd.gateway+recursive` script, and/or `ping_cmd`
-is a symlink to `ping_cmd.gateway+recursive`.
+    specified computer. Has an effect only if `ssh_cmd` is a symlink to
+    `ssh_cmd.gateway` or `ssh_cmd.gateway+recursive` script, and/or `ping_cmd`
+    is a symlink to `ping_cmd.gateway+recursive`.
 
-    * `vpngw_user`: An username using which `ssh` must connect to achieve access
-to the specified computer. Has an effect only if `ssh_cmd` is a symlink to
-`ssh_cmd.gateway` or `ssh_cmd.gateway+recursive` script, and/or `ping_cmd`
-is a symlink to `ping_cmd.gateway+recursive`.
+    * `vpngw_user`: An username using which `ssh` must connect to achieve
+    access to the specified computer. Has an effect only if `ssh_cmd` is
+    a symlink to `ssh_cmd.gateway` or `ssh_cmd.gateway+recursive` script,
+    and/or `ping_cmd` is a symlink to `ping_cmd.gateway+recursive`.
 
     * `vpngw_keydir`: A directory on gateway where public keys for subordinate
-computers are located. Should be full path, but should not contain trailing
-slash. Has an effect only if `ssh_cmd` is a symlink to
-`ssh_cmd.gateway+recursive` script.
+    computers are located. Should be full path, but should not contain trailing
+    slash. Has an effect only if `ssh_cmd` is a symlink to
+    `ssh_cmd.gateway+recursive` script.
 
 * Command files. These files are generally symlinks to the files inside
 `templates.d` subdirectory which are bash scripts (they should have appropriate
@@ -153,110 +161,104 @@ permissions) that perform some command on a remote computer.
 each of them could use the following two exported environment variables:
 `$MACHINE` (a name of computer, as it is specified in the name of corresponding
 directory inside `computers.d`), and `$SCRIPTPATH` (which is the actual path to
-subdirectory related to this computer under `computers.d`).
+subdirectory related to this computer under `computers.d`). If you have
+a specific requirement, you may put your own script(s) in `templates.d`, and
+link these files to it.
 
-If you have a specific requirement, you may put your own script(s) in
-`templates.d`, and link these files to it.
+    * `ssh_cmd`: Prints a string to execute SSH command on remote computer.
+    Should never fail on properly configured RUMIA. Could be symlinked to:
 
-    * `ssh_cmd`: Prints a string to execute SSH command on remote computer. Should
-never fail on properly configured RUMIA.
-
-Could be symlinked to:
-
-        * `../../templates.d/ssh_cmd.local`: a simple SSH to remote computer as root
-using `key` as a public key.
+        * `../../templates.d/ssh_cmd.local`: a simple SSH to remote computer
+        as root using `key` as a public key.
 
         * `../../templates.d/ssh_cmd.gateway`: SSH to remote computer using
-a specific host, port and user, that are specified in `vpngw_host`,
-`vpngw_port`, and `vpngw_user`, correspondingly. `key` is stll a public key.
+        a specific host, port and user, that are specified in `vpngw_host`,
+        `vpngw_port`, and `vpngw_user`, correspondingly. `key` is stll a public
+        key.
 
-        * `../../templates.d/ssh_cmd.recursive`: SSH through other SSH tunnel. First
-we connect to `vpngw_host` using `key`, and then, after we connected, we
-proceed to connect to specified hostname using `/root/keys/$MACHINE.pk` key,
-which is located on `vpngw_host`.
+        * `../../templates.d/ssh_cmd.recursive`: SSH through other SSH tunnel.
+        First we connect to `vpngw_host` using `key`, and then, after we
+        connected, we proceed to connect to specified hostname using
+        `/root/keys/$MACHINE.pk` key, which is located on `vpngw_host`.
 
-        * `../../templates.d/ssh_cmd.gateway+recursive`: a combination of above two
-methods. First we connect to `vpngw_host` port `vpngw_port` using `key` as user
-`vpngw_user`, and then, after we connected, we proceed to connect to specified
-hostname using `$MACHINE.pk` key, which is located on `vpngw_host` in directory
-`vpngw_keydir`.
+        * `../../templates.d/ssh_cmd.gateway+recursive`: a combination of above
+        two methods. First we connect to `vpngw_host` port `vpngw_port` using
+        `key` as user `vpngw_user`, and then, after we connected, we proceed
+        to connect to specified hostname using `$MACHINE.pk` key, which is
+        located on `vpngw_host` in directory `vpngw_keydir`.
 
         * `../../templates.d/ssh_cmd.sshpass`: a simple SSH to remote computer
-as root using `ssh_password` as SSH password. Obvioulsy it is absolutely
-insecure, avoid using this method by any measures. Note: `require` should
-contain "`sshpass`" for this, and `sshpass` utility should be installed
-on remote computer.
+        as root using `ssh_password` as SSH password. Obvioulsy it is
+        absolutely insecure, avoid using this method by any measures. Note:
+        `require` should contain "`sshpass`" for this, and `sshpass` utility
+        should be installed on remote computer.
 
     * `ping_cmd`: Check an availability of remote computer. If machine is
-unavailable, then no further polling is performed. Should print nothing, and
-return 0 on success and non-null on failure.
+    unavailable, then no further polling is performed. Should print nothing,
+    and return 0 on success and non-null on failure. Could be symlinked to:
 
-Could be symlinked to:
+        * `../../templates.d/ping_cmd.generic`: a generic ping of remote
+        computer.
 
-        * `../../templates.d/ping_cmd.generic`: a generic ping of remote computer.
+        * `../../templates.d/ping_cmd.by_ssh`: "pinging" a machine by opening
+        an SSH session to it (using `ssh_cmd`'s output). Useful if you connect
+        to it through a gateway (using `ssh_cmd.gateway` script).
 
-        * `../../templates.d/ping_cmd.by_ssh`: "pinging" a machine by opening an SSH
-session to it (using `ssh_cmd`'s output). Useful if you connect to it through
-a gateway (using `ssh_cmd.gateway` script).
+        * `../../templates.d/ping_cmd.recursive`: a ping through SSH tunnel.
+        First we connect to `vpngw_host` using `key`, and then, after we
+        connected, we just ping specified hostname. Useful if you connect to it
+        recursively (using `ssh_cmd.recursive` script).
 
-        * `../../templates.d/ping_cmd.recursive`: a ping through SSH tunnel. First
-we connect to `vpngw_host` using `key`, and then, after we connected, we just
-ping specified hostname. Useful if you connect to it recursively (using
-`ssh_cmd.recursive` script).
-
-        * `../../templates.d/ping_cmd.gateway+recursive`: a ping through SSH tunnel
-via gateway. First we connect to `vpngw_host` port `vpngw_port` using `key`
-as user `vpngw_user`, and then, after we connected, we just ping specified
-hostname. Useful if you connect to it recursively through gateway (using
-`ssh_cmd.gateway+recursive` script).
+        * `../../templates.d/ping_cmd.gateway+recursive`: a ping through SSH
+        tunnel via gateway. First we connect to `vpngw_host` port `vpngw_port`
+        using `key` as user `vpngw_user`, and then, after we connected, we just
+        ping specified hostname. Useful if you connect to it recursively
+        through gateway (using `ssh_cmd.gateway+recursive` script).
 
     * `uptime_cmd`: Print an uptime of remote computer. Return value does not
-matter.
+    matter. Could be symlinked to:
 
-Could be symlinked to:
+        * `../../templates.d/uptime_cmd.generic`: calling `uptime` command
+        through an SSH session to remote computer (using `ssh_cmd`'s output).
 
-        * `../../templates.d/uptime_cmd.generic`: calling `uptime` command through
-an SSH session to remote computer (using `ssh_cmd`'s output).
+    * `tempget_cmd`: Print a temperature of remote computer's sensor number
+    `$1`, starting from 0, or print "`99.9`" on error. Return value does not
+    matter. Maximum 7 temperature sensors are now supported, and 6 if the last
+    position is occupied by battery sensor. Actual number of sensors are
+    specified in `temp_nodes` file inside computer's subdirectory in
+    `computers.d`. Could be symlinked to:
 
-    * `tempget_cmd`: Print a temperature of remote computer's sensor number `$1`,
-starting from 0, or print "`99.9`" on error. Return value does not matter.
-Maximum 7 temperature sensors are now supported, and 6 if the last position
-is occupied by battery sensor. Actual number of sensors are specified
-in `temp_nodes` file inside computer's subdirectory in `computers.d`.
+        * `../../templates.d/tempget_cmd.generic`: Call `get_temperature`
+        by SSH (using `ssh_cmd`'s output) passing the first parameter to it.
 
-Could be symlinked to:
-
-        * `../../templates.d/tempget_cmd.generic`: Call `get_temperature` by SSH
-(using `ssh_cmd`'s output) passing the first parameter to it.
-
-        * `../../templates.d/tempget_cmd.hdd`: Query `/dev/sda` (if first parameter
-is 0) or `/dev/sdb` (if first parameter is 1) for its temperature using
-`smartctl`. Note: `require` should contain "`smartctl`" for this,
-and `smartctl` utility should be installed on remote computer.
+        * `../../templates.d/tempget_cmd.hdd`: Query `/dev/sda` (if first
+        parameter is 0) or `/dev/sdb` (if first parameter is 1) for its
+        temperature using `smartctl`. Note: `require` should contain
+        "`smartctl`" for this, and `smartctl` utility should be installed
+        on the remote computer.
 
     * `gethdd_cmd`: Check a consistency of remote computer's disk. Should print
-nothing, and return 0 on success and non-null on failure.
+    nothing, and return 0 on success and non-null on failure. Could be
+    symlinked to:
 
-Could be symlinked to:
+        * `../../templates.d/gethdd_cmd.sda`: Check remote computer's
+        `/dev/sda` by SSH (using `ssh_cmd`'s output and calling
+        `get_hdd_state`).
 
-        * `../../templates.d/gethdd_cmd.sda`: Check remote computer's `/dev/sda`
-by SSH (using `ssh_cmd`'s output and calling `get_hdd_state`).
+        * `../../templates.d/gethdd_cmd.nvme`: Do the same, but for
+        `/dev/nvme0n1`.
 
-        * `../../templates.d/gethdd_cmd.nvme`: Do the same, but for `/dev/nvme0n1`.
+    * `battery_cmd`: Print a battery level of remote computer. Return value
+    does not matter. Could be symlinked to:
 
-    * `battery_cmd`: Print a battery level of remote computer. Return value does
-not matter.
+        * `../../templates.d/battery_cmd.uncolored`: Print remote computer's
+        battery level, connecting to it by SSH (using `ssh_cmd`'s output)
+        and calling `get_battery`.
 
-Could be symlinked to:
+        * `../../templates.d/battery_cmd.colored`: Do the same, but colorize
+        output: 0..20% is bright red, 21..50% is yellow, 51..100% is cyan.
 
-        * `../../templates.d/battery_cmd.uncolored`: Print remote computer's battery
-level, connecting to it by SSH (using `ssh_cmd`'s output) and calling
-`get_battery`.
-
-        * `../../templates.d/battery_cmd.colored`: Do the same, but colorize output:
-0..20% is bright red, 21..50% is yellow, 51..100% is cyan.
-
-## Configuring a remote system
+### Configuring remote computers
 
 For RUMIA to be able to monitor computer's availability, this computer
 should be able to reply to ping (if you're using `ping_cmd.generic` or
