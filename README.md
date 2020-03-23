@@ -56,7 +56,7 @@ time is equal to time consumed by one shot and this delay).
 
 All variables are set using generic BASH syntax, e.g. no spaces should be
 between variable name, "=" sign, and variable value; values containing
-spaces must be enclosed in doube or single quotes; BASH variable substitutions
+spaces must be enclosed in double or single quotes; BASH variable substitutions
 are allowed, etc.
 
 In the example of `rumia.conf`, any of these variables may be redefined while
@@ -91,7 +91,8 @@ command, and removed by `rm` (obviously).
     * other `*_enabled` files: useful when running `execute_cmd` (see below).
 
 * Data files. These files are generally symlinks to data files inside
-`templates.d` subdirectory.
+`templates.d` subdirectory, except when a file is supposed to be unique (e.g.
+SSH private key or computer's fancy name).
 
     * `key`: private SSH key to use while connecting to computer. To
     successfully connect to computer, you must have public key of specified
@@ -107,29 +108,30 @@ command, and removed by `rm` (obviously).
     or it could be a beautifized name using symbols that are not allowed in
     a typical hostname (e.g. host "twilight-sparkle" may have fancy name of
     "Твайлайт" in Russian language). Makes no sense if `ssh_enabled` doesn't
-    exist. If fancy name or generic name is longer than 8 characters, it will
-    be truncated.
+    exist. If fancy name or hostname (when fancy name is not used) is longer
+    than 8 characters, it will be truncated.
 
     * `temp_nodes`: Number of temperatures that are readable from a computer.
     If missing, no temperature or battery level check is performed. Usually it
-    is a symlink to `../../templates.d/nodes.*` file which contain the desired
-    number.
+    is a symlink to `../../templates.d/nodes.*` file which contains the desired
+    number. Has no effect if `temp_enabled` is missing.
 
     * `temp_alert`: Alerting temperature value. Temperatures lower that that
     are shown in gray, higher (but below critical) are shown in yellow. Has
-    no effect if `temp_nodes` is missing. Usually it is a symlink to
-    `../../templates.d/temp_alert.*` file which contain the desired
+    no effect if `temp_enabled` is missing. Usually it is a symlink to
+    `../../templates.d/temp_alert.*` file which contains the desired
     temperature.
 
     * `temp_crit`: As above, but a critical temperature value. Temperatures
-    higher that that are shown in red. Has no effect if `temp_nodes`
+    higher that that are shown in red. Has no effect if `temp_enabled`
     is missing. Usually it is a symlink to `../../templates.d/temp_crit.*` file
-    which contain the desired temperature.
+    which contains the desired temperature.
 
     * `require`: A list of binaries (one for a line) which is to be checked
-    when a certain computer is polled. Each of them is examined using `which`
-    command, and if at least one of them isn't found, then polling of this
-    computer is skipped, and the corresponding message is shown in the table.
+    for existence on the host where RUMIA is running when a certain computer
+    is polled. Each of them is examined using `which` command, and if at least
+    one of them isn't found, then polling of this computer is skipped,
+    and the corresponding message is displayed in the table.
 
     * `ssh_password`: A root password for SSH session. Has an effect only if
     `ssh_cmd` is a symlink to `ssh_cmd.sshpass`.
@@ -169,12 +171,12 @@ link these files to it.
     Should never fail on properly configured RUMIA. Could be symlinked to:
 
         * `../../templates.d/ssh_cmd.local`: a simple SSH to remote computer
-        as root using `key` as a public key.
+        as root using `key` as a private key.
 
         * `../../templates.d/ssh_cmd.gateway`: SSH to remote computer using
         a specific host, port and user, that are specified in `vpngw_host`,
-        `vpngw_port`, and `vpngw_user`, correspondingly. `key` is stll a public
-        key.
+        `vpngw_port`, and `vpngw_user`, correspondingly. `key` is stll a
+        private key.
 
         * `../../templates.d/ssh_cmd.recursive`: SSH through other SSH tunnel.
         First we connect to `vpngw_host` using `key`, and then, after we
@@ -299,7 +301,7 @@ To run monitoring system, just run `rumia`.
 
 You can specify the following parameters:
 
-* `--nofancynames`: Don't use fancy names for computers, use actual names
+* `--nofancynames`: Don't use fancy names for computers, use actual hostnames
 (as in directory names inside `computers.d`) instead.
 
 * `--oneshot`: Perform only one shot and immediately exit. Don't write anything
@@ -328,7 +330,7 @@ has no knowledge of how to gather information from it.
 It is useful to run `rumia` on some machine inside a `tmux` or `screen`
 session, and if you're about to check computers' status, you might connect
 to it, attach to session and check whatever you need, then detach and
-disconnect, but `tmux` or `screen` session then continue running.
+disconnect, but `tmux` or `screen` session then continues to run.
 
 ## Function
 
@@ -358,8 +360,8 @@ it's in pause state, and RUMIA will prematurely end the pause state, clear
 screen again, and immediately start next shot. The corresponding hint is
 displayed in top of the screen (if not in one shot mode).
 
-**Note:** if not interrupted, RUMIA won't clear screen once pause state is
-finished. Next shot will redraw each line separately, so even when RUMIA
+**Note:** if USR1 is not signaled, RUMIA won't clear screen once pause state
+is finished. Next shot will redraw each line separately, so even when RUMIA
 performs a shot, you still have all information still available on the screen,
 except the one for a computer currently being polled.
 
