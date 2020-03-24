@@ -85,16 +85,13 @@ the following files or symbolic links:
 * Marker files. These files are generally zero-sized and made by `touch`
 command, and removed by `rm` (obviously).
 
-    * `ssh_enabled`: Let RUMIA poll this computer at all. Every computer that
+    * `temp_enabled`: Let RUMIA poll this computer at all. Every computer that
     does not have this marker is skipped while gathering information.
-
-    * `temp_enabled`: Let RUMIA check temperatures for a specified computer.
-    Makes no sense if `ssh_enabled` doesn't exist.
 
     * `absent`: Let RUMIA know that this computer is intentionally absent. If
     it can't be reached by `ping_cmd`, it produces "Sleep" message in the table
     instead of "Dead", so it could be considered not a failure that needs
-    attention. Makes no sense if `ssh_enabled` doesn't exist.
+    attention. Makes no sense if `temp_enabled` doesn't exist.
 
     * other `*_enabled` files: useful when running `execute_cmd` (see below).
 
@@ -115,7 +112,7 @@ SSH private key or computer's fancy name).
     "div193-host195.organization.com" could have a fancy name of "Host 195");
     or it could be a beautifized name using symbols that are not allowed in
     a typical hostname (e.g. host "twilight-sparkle" may have fancy name of
-    "Твайлайт" in Russian language). Makes no sense if `ssh_enabled` doesn't
+    "Твайлайт" in Russian language). Makes no sense if `temp_enabled` doesn't
     exist. If fancy name or hostname (when fancy name is not used) is longer
     than 8 characters, it will be truncated.
 
@@ -126,14 +123,15 @@ SSH private key or computer's fancy name).
 
     * `temp_alert`: Alerting temperature value. Temperatures lower that that
     are shown in gray, higher (but below critical) are shown in yellow. Has
-    no effect if `temp_enabled` is missing. Usually it is a symlink to
-    `../../templates.d/temp_alert.*` file which contains the desired
-    temperature.
+    no effect if `temp_enabled` or `temp_nodes` is missing. Usually it is
+    a symlink to `../../templates.d/temp_alert.*` file which contains the
+    desired temperature.
 
     * `temp_crit`: As above, but a critical temperature value. Temperatures
     higher that that are shown in red. Has no effect if `temp_enabled`
-    is missing. Usually it is a symlink to `../../templates.d/temp_crit.*` file
-    which contains the desired temperature.
+    or `temp_nodes` is missing. Usually it is a symlink to
+    `../../templates.d/temp_crit.*` file which contains the desired
+    temperature.
 
     * `require`: A list of binaries (one for a line) which is to be checked
     for existence on the host where RUMIA is running when a certain computer
@@ -327,11 +325,11 @@ parameter in command line that has meaning is the last one.
 * `--version`: Show version and exit.
 
 Additionally, you may specify `MACHINES` environment variable to run RUMIA on
-a subset of computers defined in `computers.d` which have `ssh_enabled` marker.
-For example, if you have `01-compA`, `02-compB`, `03-compC`, and `04-compD`
-subdirectories there, and first three have `ssh_enabled` inside them, then by
-default RUMIA would poll compA, compB and compC. But you may want to run RUMIA
-like:
+a subset of computers defined in `computers.d` which have `temp_enabled`
+marker. For example, if you have `01-compA`, `02-compB`, `03-compC`, and
+`04-compD` subdirectories there, and first three have `temp_enabled` inside
+them, then by default RUMIA would poll compA, compB and compC. But you may want
+to run RUMIA like:
 
 ```bash
 MACHINES="compA compC" ./rumia --oneshot
@@ -339,7 +337,7 @@ MACHINES="compA compC" ./rumia --oneshot
 
 Then it will poll just compA and compB, and nothing else. Specifying
 `MACHINES="compA compD"`, by the way, won't let compD to be polled; it is
-implied that if a computer doesn't have its own `ssh_enabled`, then RUMIA
+implied that if a computer doesn't have its own `temp_enabled`, then RUMIA
 has no knowledge of how to gather information from it.
 
 It is useful to run `rumia` on some machine inside a `tmux` or `screen`
@@ -382,7 +380,8 @@ except the one for a computer currently being polled.
 
 ## Executing an arbitrary command
 
-***[TODO]*** (tell about MARKER variable, tell that for example, you may have `autofs_enabled` file in some cases)
+***[TODO]*** (tell about MARKER variable, tell that for example, you may have
+`autofs_enabled` file in some cases). Default marker is `ssh_enabled`.
 
 ## Trivia
 
