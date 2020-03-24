@@ -201,7 +201,7 @@ link these files to it.
         as root using `ssh_password` as SSH password. Obvioulsy it is
         absolutely insecure, avoid using this method by any measures. Note:
         `require` should contain "`sshpass`" for this, and `sshpass` utility
-        should be installed on remote computer.
+        should be installed on the computer where RUMIA is running.
 
     * `ping_cmd`: Check an availability of remote computer. If machine is
     unavailable, then no further polling is performed. Should print nothing,
@@ -243,9 +243,8 @@ link these files to it.
 
         * `../../templates.d/tempget_cmd.hdd`: Query `/dev/sda` (if first
         parameter is 0) or `/dev/sdb` (if first parameter is 1) for its
-        temperature using `smartctl`. Note: `require` should contain
-        "`smartctl`" for this, and `smartctl` utility should be installed
-        on the remote computer.
+        temperature using `smartctl`. Note: `smartctl` utility should be
+        installed on the remote computer.
 
     * `gethdd_cmd`: Check a consistency of remote computer's disk. Should print
     nothing, and return 0 on success and non-null on failure. Could be
