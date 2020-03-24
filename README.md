@@ -30,14 +30,11 @@ the chosen remote computers.
 
 ### Configuring RUMIA itself
 
-You should configure `rumia.conf` file (see `rumia.conf.example` as an example)
+You should prepare a config file (see `rumia.conf.example` as an example)
 as following:
 
 * `PREFIX` should be a path where RUMIA is installed. It should contain language
 files, and, in typical installation, `computers.d` and `templates.d` dirs.
-Config file `rumia.conf` should be in the directory from which `rumia`
-is launched; in most cases directory for `rumia.conf` and `rumia` is equal to
-`PREFIX`.
 
 * `COMPUTERS_D` should be a path to `computers.d` directory. May be relative
 to `PREFIX` if BASH variable substitution is used.
@@ -66,6 +63,17 @@ but you want to launch it in one shot mode with English output, you may run:
 ```bash
 RUMIA_LANG=en_US ./rumia --oneshot
 ```
+
+Unless `--config` specified in command line, RUMIA reads the following files
+as its config files (if any of them exist):
+
+* `/etc/rumia.conf`: system-wide RUMIA config file
+* `~/.config/rumia.conf`: user-specific RUMIA config file
+* `~/.rumiarc`: user-specific additions to RUMIA config file
+* `./rumia.conf`: directory-specific RUMIA config file
+
+Each next file take precedence over the previous ones (overriding the
+definitions made in it).
 
 ### Letting RUMIA know about remote computers
 
@@ -310,6 +318,14 @@ into a log file.
 * `--noclear`: Don't clear console screen on start or when USR1 is signaled;
 don't reposition cursor to the top of the screen on each new shot. Print new
 shot data just after the previous.
+
+* `--config <configfile>`: Use predefined config file instead of default.
+Note: no other config files is read if this parameter is specified. The only
+parameter in command line that has meaning is the last one.
+
+* `--help`: Show usage and exit.
+
+* `--version`: Show version and exit.
 
 Additionally, you may specify `MACHINES` environment variable to run RUMIA on
 a subset of computers defined in `computers.d` which have `ssh_enabled` marker.

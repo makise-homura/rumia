@@ -2,7 +2,58 @@
 
 RUMIA_VERSION="0.1"
 
-. ./rumia.conf
+ENABLE_CLEAR="yes"
+ENABLE_FANCYNAMES="yes"
+ONESHOT="no"
+CONFIGFILE=""
+HELPEXIT="no"
+VERSIONEXIT="no"
+PARAMETEREXIT="no"
+while [ "$1" ]
+do
+    case "$1" in
+        "--nofancynames")
+            ENABLE_FANCYNAMES="no"
+        ;;
+        "--oneshot")
+            ENABLE_ONESHOT="yes"
+        ;;
+        "--noclear")
+            ENABLE_CLEAR="no"
+        ;;
+        "--config")
+            shift
+            CONFIGFILE="$1"
+        ;;
+        "--help")
+            HELPEXIT="yes"
+        ;;
+        "--version")
+            VERSIONEXIT="yes"
+        ;;
+        *)
+            PARAMETEREXIT="yes"
+            WRONGPARAMETER="$1"
+        ;;
+    esac
+    shift
+done
+
+if [ "$CONFIGFILE" ]
+then
+    if [ -f "$CONFIGFILE" ]
+    then
+        . $CONFIGFILE
+    else
+        echo "No config file $CONFIGFILE found, terminating."
+        exit 16
+    fi
+else
+    [ -f "/etc/rumia.conf" ] && . /etc/rumia.conf
+    [ -f "~/.config/rumia.conf" ] && . ~/.config/rumia.conf
+    [ -f "~/.rumiarc" ] && . ~/.rumiarc
+    [ -f "./rumia.conf" ] && . ./rumia.conf
+fi
 
 LANGFILE="$PREFIX/language.$RUMIA_LANG"
 if [ ! -f $LANGFILE ]
@@ -13,15 +64,32 @@ fi
 
 . $LANGFILE
 
-ENABLE_CLEAR="yes"
-ENABLE_FANCYNAMES="yes"
-ONESHOT="no"
-for parameter in $@
-do
-    [ "$parameter" = "--nofancynames" ] && ENABLE_FANCYNAMES="no"
-    [ "$parameter" = "--oneshot" ]      && ENABLE_ONESHOT="yes"
-    [ "$parameter" = "--noclear" ]      && ENABLE_CLEAR="no"
-done
+if [ "$PARAMETEREXIT" = "yes" ]
+then
+    echo "$MSG_RUMIAHELP_0"
+    echo "$MSG_RUMIAHELP_1"
+    echo "$MSG_RUMIAHELP_2"
+    echo "$MSG_RUMIAHELP_3"
+    echo "$MSG_RUMIAHELP_4"
+    echo "$MSG_RUMIAHELP_5"
+    echo "$MSG_RUMIAHELP_6"
+    echo "$MSG_RUMIAHELP_7"
+    echo "$MSG_RUMIAHELP_8"
+    echo "$MSG_RUMIAHELP_9"
+    exit 0
+fi
+
+if [ "$VERSIONEXIT" = "yes" ]
+then
+    echo "${MSG_RUMIAVERS_0}${RUMIA_VERSION}${MSG_RUMIAVERS_1}"
+    exit 0
+fi
+
+if [ "$PARAMETEREXIT" = "yes" ]
+then
+    echo "${MSG_PARAMEXIT_0}${WRONGPARAMETER}${MSG_PARAMEXIT_1}"
+    exit 16
+fi
 
 DELAYPID=""
 trap "restart" SIGUSR1
