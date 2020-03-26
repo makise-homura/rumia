@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Boards like El-2S4 have LM96163 at address 0x4c at every I2C bus.
+# I2C bus numbers correspond to CPU numbers, and temp2 is sensor temperature
+# (while temp1 is air temperature and thus do not matter to us).
+
+input=/sys/class/i2c-dev/i2c-$1/device/$1-004c/temp2_input
+if [ -f "$input" ]
+then
+    echo "scale = 1; `cat $input` / 1000" | bc
+    exit 0
+fi
+echo "99.9"
+exit 1

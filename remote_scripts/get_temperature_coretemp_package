@@ -1,0 +1,17 @@
+#!/bin/sh
+lsmod | grep -q coretemp || test -f /lib/modules/`uname -r`/kernel/drivers/hwmon/coretemp.ko && modprobe coretemp
+for mon in /sys/class/hwmon/*
+do
+    [ -f ${mon}/name ] || continue
+    name=`cat ${mon}/name`
+    [ "${name}" = "coretemp" ] || continue
+    for sensor in ${mon}/temp*_label
+    do
+        [ "`cat $sensor`" = "Package id $1" ] || continue
+        trueinput=`echo $sensor | sed 's/_label$/_input/'`
+        echo "scale = 1; `cat ${trueinput}` / 1000" | bc
+        exit 0
+    done
+done
+echo "99.9"
+exit 1
