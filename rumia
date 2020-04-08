@@ -106,6 +106,8 @@ trap "quit" SIGINT
 quit()
 {
     [ "$DELAYPID" ] && kill -INT $DELAYPID
+    tput smam
+    tput rmcup
     echo
     echo "$MSG_SIGINT"
     exit 0
@@ -124,7 +126,11 @@ pidlength=`echo -n $MYPID | wc -c`
 padding=""
 for i in `seq 4 -1 $pidlength` ; do padding=" $padding"; done
 MYPID="${padding}$MYPID"
-[ "$ENABLE_CLEAR" = "yes" ] && clear
+if [ "$ENABLE_CLEAR" = "yes" ]
+then
+    [ "$ENABLE_ONESHOT" = "yes" ] || tput smcup
+    clear
+fi
 
 if [ "$MACHINES" ]
 then
@@ -143,6 +149,7 @@ fi
 while true
 do
     [ "$ENABLE_CLEAR" = "yes" ] && echo -ne "\e[H\n"
+    tput rmam
     if [ "$ENABLE_ONESHOT" = "yes" ]
     then
         echo "  ╔═ RUMIA v$RUMIA_VERSION ═══════════════════════════════════════════════════════════════════╗"
@@ -279,6 +286,7 @@ do
         fi
     done
     echo "  ╚════════════════════════════════════════════════════════════════════════════════╝"
+    tput smam
     [ "$ENABLE_ONESHOT" = "yes" ] && break
     [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE
     sleep $DELAY &
