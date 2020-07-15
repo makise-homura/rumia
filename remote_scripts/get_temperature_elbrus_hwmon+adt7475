@@ -1,0 +1,27 @@
+#!/bin/sh
+modprobe l_pcs
+for mon in /sys/class/hwmon/*
+do
+    [ -f ${mon}/name -o -f ${mon}/device/name ] || continue
+    [ -f ${mon}/name ] && name=`cat ${mon}/name`
+    [ -f ${mon}/device/name ] && name=`cat ${mon}/device/name`
+    if [ "$1" = "0" ]
+    then
+        [ "${name}" = "l_pcs" ] || continue
+        [ "`cat ${mon}/node`" = "0" ] || continue
+        for sensor in ${mon}/temp*_label
+        do
+            [ "`cat $sensor`" = "Node 0 Max" -o "`cat $sensor`" = "CurrMax" ] || continue
+            trueinput=`echo $sensor | sed 's/_label$/_input/'`
+            echo "scale = 1; `cat ${trueinput}` / 1000" | bc
+            exit 0
+        done
+    else
+        [ "${name}" = "adt7475" ] || continue
+        [ -f "${mon}/device/temp${1}_input" ] || continue
+        echo "scale = 1; `cat ${mon}/device/temp${1}_input` / 1000" | bc
+        exit 0
+    fi
+done
+echo "99.9"
+exit 1
