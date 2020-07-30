@@ -114,7 +114,7 @@ quit()
 }
 
 # Computer directory must/may be populated with:
-#   output scripts (print text value): uptime_cmd, tempget_cmd, battery_cmd
+#   output scripts (print text value): uptime_cmd, cpuget_cmd, tempget_cmd, battery_cmd
 #   checker scripts (return code): ping_cmd (mandatory), gethdd_cmd
 #   textfiles: fancyname, temp_nodes, temp_alert, temp_crit, vpngw_port
 #   markers: temp_enabled, ssh_enabled, absent
@@ -152,12 +152,12 @@ do
     tput rmam
     if [ "$ENABLE_ONESHOT" = "yes" ]
     then
-        echo "  ╔═ RUMIA v$RUMIA_VERSION ═══════════════════════════════════════════════════════════════════╗"
+        echo "  ╔═ RUMIA v$RUMIA_VERSION ════════════════════════════════════════════════════════════════════════╗"
     else
-        echo -e "  ╔═ RUMIA v$RUMIA_VERSION ═════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
+        echo -e "  ╔═ RUMIA v$RUMIA_VERSION ══════════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
     fi
-    echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
-    echo "  ╟────────────────────────────────────────────────────────────────────────────────╢"
+    echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_CPU $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
+    echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
     log_str="`date`"
     [ "$savemachines" = "no" ] && MACHINES="`ls $COMPUTERS_D`"
     for SCRIPTDIR in $MACHINES
@@ -186,7 +186,7 @@ do
                     machine_crit=`cat $SCRIPTPATH/temp_crit`
                 fi
             fi
-            echo -ne "                                                                                   ║\r  ║  $machine_name\r\e[14C"
+            echo -ne "                                                                                        ║\r  ║  $machine_name\r\e[14C"
 
             # Check if we have all required tools
             CONDITIONS_MET="yes"
@@ -223,7 +223,6 @@ do
                 echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
 
                 # Check HDD
-                cmdgethdd=""
                 if [ -x $SCRIPTPATH/gethdd_cmd ]
                 then
                     if $SCRIPTPATH/gethdd_cmd
@@ -234,6 +233,14 @@ do
                     fi
                 else
                     echo -ne "     "
+                fi
+
+                # Check CPU load
+                if [ -x $SCRIPTPATH/cpuget_cmd ]
+                then
+                    $SCRIPTPATH/cpuget_cmd
+                else
+                    echo -n " ---- "
                 fi
 
                 # Check temperatures and battery level
@@ -281,11 +288,11 @@ do
                 else
                     echo -ne "\e[1;31m$MSG_DEAD"
                 fi
-                echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ---- "
+                echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ----  ---- "
             fi
         fi
     done
-    echo "  ╚════════════════════════════════════════════════════════════════════════════════╝"
+    echo "  ╚═════════════════════════════════════════════════════════════════════════════════════╝"
     tput smam
     [ "$ENABLE_ONESHOT" = "yes" ] && break
     [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE

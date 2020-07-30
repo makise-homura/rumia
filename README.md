@@ -229,6 +229,14 @@ link these files to it.
         * `../../templates.d/uptime_cmd.generic`: calling `uptime` command
         through an SSH session to remote computer (using `ssh_cmd`'s output).
 
+    * `cpuget_cmd`: Print a CPU utilization of remote computer. Return value
+    does not matter. Could be symlinked to:
+
+        * `../../templates.d/cpuget_cmd.mpstat`: calling `mpstat` command
+        through an SSH session to remote computer (using `ssh_cmd`'s output).
+        Output will be colorized: 0..9% is light gray, 10..79% is cyan,
+        80..100% is bright white.
+
     * `tempget_cmd`: Print a temperature of remote computer's sensor number
     `$1`, starting from 0, or print "`99.9`" on error. Return value does not
     matter. Maximum 7 temperature sensors are now supported, and 6 if the last
