@@ -47,6 +47,10 @@ variable substitution is used.
 available languages are `en_US` and `ru_RU`. The corresponding
 `language.$RUMIA_LANG` file must exist in `$PREFIX`.
 
+* `MARKER` should be a name of a marker file that makes a computer visible
+to RUMIA. Usually this is `temp_enabled`. For further information, see below
+for a meaning of `temp_enabled` file.
+
 * `DELAY` should be set to a seconds between end of one shot and begin of the
 following (Note: it's not the time between start of each shot, so actual period
 time is equal to time consumed by one shot and this delay).
@@ -88,7 +92,20 @@ directory may contain the following files or symbolic links:
 command, and removed by `rm` (obviously).
 
     * `temp_enabled`: Let RUMIA poll this computer at all. Every computer that
-    does not have this marker is skipped while gathering information.
+    does not have this marker is skipped while gathering information. The name
+    of this marker file might be redefined by a `MARKER` variable in the config
+    file or in the command line; thus you may have the single `computers.d`
+    directory for different polling strategies. E.g. you may have a generic
+    marker, `temp_enabled`, and `high_attention` for several computers that
+    need high attention, and so, high polling rate. Then you just may have two
+    sessions (e.g. `tty1` and `tty2`), and run `DELAY=600 /opt/rumia/rumia`
+    in `tty1`, and `MARKER=high_attention DELAY=60 /opt/rumia/rumia` in `tty2`,
+    and then, in `tty1` you'll have all your computers that have `temp_enabled`
+    in their directories, and in `tty2` you'll have a subset of them, of those
+    who have `high_attention` marker file in their directories, and the latter
+    will be polled ten times more often. Of course, it might be not a subset,
+    but a completely different set that may or may not have a non-empty
+    intersection with the first one.
 
     * `absent`: Let RUMIA know that this computer is intentionally absent. If
     it can't be reached by `ping_cmd`, it produces "Sleep" message in the table
@@ -278,7 +295,7 @@ link these files to it.
 **Note:** if you wish to place a separator between two lines, name a directory
 using empty hostname. E.g., `31-` will place a separator after `30-...`,
 but before `32-...`. The contents of directory, which is used as a separator
-mark, is ignored.
+mark, is ignored, except for specific marker files (see `temp_enabled` above).
 
 ### Configuring remote computers
 

@@ -164,134 +164,136 @@ do
     do
         SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
         MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
-        if [ -z "$MACHINE" ]
+        if [ -e $SCRIPTPATH/$MARKER ]
         then
-            echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
-        elif [ -e $SCRIPTPATH/temp_enabled ]
-        then
-            export MACHINE
-            export SCRIPTPATH
-
-            # Show fancy name
-            if [ "$ENABLE_FANCYNAMES" = "yes" -a -e "$SCRIPTPATH/fancyname" ]
+            if [ -z "$MACHINE" ]
             then
-                machine_name=`cat $SCRIPTPATH/fancyname`
+                echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
             else
-                machine_name=$MACHINE
-            fi
-            machine_nodes=""
-            if [ -e $SCRIPTPATH/temp_nodes ]
-            then
-                machine_nodes=`cat $SCRIPTPATH/temp_nodes`
-                [ "$machine_nodes" ] && if [ "$machine_nodes" -gt 0 ]
+                export MACHINE
+                export SCRIPTPATH
+
+                # Show fancy name
+                if [ "$ENABLE_FANCYNAMES" = "yes" -a -e "$SCRIPTPATH/fancyname" ]
                 then
-                    machine_alert=`cat $SCRIPTPATH/temp_alert`
-                    machine_crit=`cat $SCRIPTPATH/temp_crit`
-                fi
-            fi
-            echo -ne "                                                                                        ║\r  ║  $machine_name\r\e[14C"
-
-            # Check if we have all required tools
-            CONDITIONS_MET="yes"
-            if [ -f "$SCRIPTPATH/require" ]
-            then
-                for requirement in `cat $SCRIPTPATH/require`
-                do
-                    cmd_path=`which $requirement 2>/dev/null`
-                    if [ ! "$cmd_path" ]
-                    then
-                        CONDITIONS_MET="no"
-                    else
-                        [ ! -x "$cmd_path" ] && CONDITIONS_MET="no"
-                    fi
-                done
-            fi
-            if [ "$CONDITIONS_MET" = "no" ]
-            then
-                echo -e "\e[1;31m$MSG_REQUIREMENT_MISSING $requirement.\e[0m"
-                continue
-            fi
-
-            # Check availability
-            if $SCRIPTPATH/ping_cmd
-            then
-
-                # Check uptime
-                struptime=""
-                if [ -x $SCRIPTPATH/uptime_cmd ]
-                then
-                    struptime=`$SCRIPTPATH/uptime_cmd 2>/dev/null | sed "$MSG_UPTIME_REGEXP"`
-                    [ -z "$struptime" ] && struptime="\e[1;31m$MSG_UNKNOWN\e[0m"
-                fi
-                echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
-
-                # Check HDD
-                if [ -x $SCRIPTPATH/gethdd_cmd ]
-                then
-                    if $SCRIPTPATH/gethdd_cmd
-                    then
-                        echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
-                    else
-                        echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
-                    fi
+                    machine_name=`cat $SCRIPTPATH/fancyname`
                 else
-                    echo -ne "     "
+                    machine_name=$MACHINE
                 fi
-
-                # Check CPU load
-                if [ -x $SCRIPTPATH/cpuget_cmd ]
+                machine_nodes=""
+                if [ -e $SCRIPTPATH/temp_nodes ]
                 then
-                    $SCRIPTPATH/cpuget_cmd
-                else
-                    echo -n " ---- "
+                    machine_nodes=`cat $SCRIPTPATH/temp_nodes`
+                    [ "$machine_nodes" ] && if [ "$machine_nodes" -gt 0 ]
+                    then
+                        machine_alert=`cat $SCRIPTPATH/temp_alert`
+                        machine_crit=`cat $SCRIPTPATH/temp_crit`
+                    fi
                 fi
+                echo -ne "                                                                                        ║\r  ║  $machine_name\r\e[14C"
 
-                # Check temperatures and battery level
-                if [ "$machine_nodes" ]
+                # Check if we have all required tools
+                CONDITIONS_MET="yes"
+                if [ -f "$SCRIPTPATH/require" ]
                 then
-                    max_node=`echo $machine_nodes - 1 | bc`
-                    for node in `seq 0 6`
+                    for requirement in `cat $SCRIPTPATH/require`
                     do
-                        if [ ! $node -gt $max_node -a -x $SCRIPTPATH/tempget_cmd ]
+                        cmd_path=`which $requirement 2>/dev/null`
+                        if [ ! "$cmd_path" ]
                         then
-                            # Temperature
-                            temp=`$SCRIPTPATH/tempget_cmd $node 2>/dev/null`
-                            [ -z "$temp" ] && temp="99.9"
-                            echo $temp | grep -qe '\.' || temp=$temp.0
-                            inttemp=`echo $temp | cut -d"." -f1`
-                            temp=`echo $temp | head -c4`
-                            color="0"
-                            [ $inttemp -ge $machine_alert ] && color="1;33"
-                            [ $inttemp -ge $machine_crit ] && color="1;31"
-                            echo -ne " \e[${color}m${temp}\e[0m "
-                            log_str="$log_str\t$MACHINE:$node=$temp"
+                            CONDITIONS_MET="no"
                         else
-                            # Battery level
-                            if [ $node -eq 6 ]
+                            [ ! -x "$cmd_path" ] && CONDITIONS_MET="no"
+                        fi
+                    done
+                fi
+                if [ "$CONDITIONS_MET" = "no" ]
+                then
+                    echo -e "\e[1;31m$MSG_REQUIREMENT_MISSING $requirement.\e[0m"
+                    continue
+                fi
+
+                # Check availability
+                if $SCRIPTPATH/ping_cmd
+                then
+
+                    # Check uptime
+                    struptime=""
+                    if [ -x $SCRIPTPATH/uptime_cmd ]
+                    then
+                        struptime=`$SCRIPTPATH/uptime_cmd 2>/dev/null | sed "$MSG_UPTIME_REGEXP"`
+                        [ -z "$struptime" ] && struptime="\e[1;31m$MSG_UNKNOWN\e[0m"
+                    fi
+                    echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
+
+                    # Check HDD
+                    if [ -x $SCRIPTPATH/gethdd_cmd ]
+                    then
+                        if $SCRIPTPATH/gethdd_cmd
+                        then
+                            echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
+                        else
+                            echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
+                        fi
+                    else
+                        echo -ne "     "
+                    fi
+
+                    # Check CPU load
+                    if [ -x $SCRIPTPATH/cpuget_cmd ]
+                    then
+                        $SCRIPTPATH/cpuget_cmd
+                    else
+                        echo -n " ---- "
+                    fi
+
+                    # Check temperatures and battery level
+                    if [ "$machine_nodes" ]
+                    then
+                        max_node=`echo $machine_nodes - 1 | bc`
+                        for node in `seq 0 6`
+                        do
+                            if [ ! $node -gt $max_node -a -x $SCRIPTPATH/tempget_cmd ]
                             then
-                                if [ -x $SCRIPTPATH/battery_cmd ]
+                                # Temperature
+                                temp=`$SCRIPTPATH/tempget_cmd $node 2>/dev/null`
+                                [ -z "$temp" ] && temp="99.9"
+                                echo $temp | grep -qe '\.' || temp=$temp.0
+                                inttemp=`echo $temp | cut -d"." -f1`
+                                temp=`echo $temp | head -c4`
+                                color="0"
+                                [ $inttemp -ge $machine_alert ] && color="1;33"
+                                [ $inttemp -ge $machine_crit ] && color="1;31"
+                                echo -ne " \e[${color}m${temp}\e[0m "
+                                log_str="$log_str\t$MACHINE:$node=$temp"
+                            else
+                                # Battery level
+                                if [ $node -eq 6 ]
                                 then
-                                    $SCRIPTPATH/battery_cmd
+                                    if [ -x $SCRIPTPATH/battery_cmd ]
+                                    then
+                                        $SCRIPTPATH/battery_cmd
+                                    else
+                                        echo -n " ---- "
+                                    fi
                                 else
                                     echo -n " ---- "
                                 fi
-                            else
-                                echo -n " ---- "
                             fi
-                        fi
-                    done
-                    echo ""
+                        done
+                        echo ""
+                    else
+                        echo " ----  ----  ----  ----  ----  ----  ---- "
+                    fi
                 else
-                    echo " ----  ----  ----  ----  ----  ----  ---- "
+                    if [ -e $SCRIPTPATH/absent ]
+                    then
+                        echo -ne "\e[1;34m$MSG_SLEEPING"
+                    else
+                        echo -ne "\e[1;31m$MSG_DEAD"
+                    fi
+                    echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ----  ---- "
                 fi
-            else
-                if [ -e $SCRIPTPATH/absent ]
-                then
-                    echo -ne "\e[1;34m$MSG_SLEEPING"
-                else
-                    echo -ne "\e[1;31m$MSG_DEAD"
-                fi
-                echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ----  ---- "
             fi
         fi
     done
