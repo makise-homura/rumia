@@ -275,7 +275,7 @@ link these files to it.
         * `../../templates.d/battery_cmd.colored`: Do the same, but colorize
         output: 0..20% is bright red, 21..50% is yellow, 51..100% is cyan.
 
-Note: if you wish to place a separator between two lines, name a directory
+**Note:** if you wish to place a separator between two lines, name a directory
 using empty hostname. E.g., `31-` will place a separator after `30-...`,
 but before `32-...`. The contents of directory, which is used as a separator
 mark, is ignored.
@@ -333,7 +333,7 @@ shot data just after the previous.
 
 * `--config <configfile>`: Use predefined config file instead of default.
 Note: no other config files is read if this parameter is specified. The only
-parameter in command line that has meaning is the last one.
+parameter in command line that has a meaning, is the last one.
 
 * `--help`: Show usage and exit.
 
