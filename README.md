@@ -79,8 +79,10 @@ definitions made in it).
 
 For each monitored computer, a specific subdirectory should be made inside
 `computers.d` directory (there are various examples of it inside
-`computers.d.example` subdirectory of RUMIA). This directory may contain
-the following files or symbolic links:
+`computers.d.example` subdirectory of RUMIA). Directory should have a name
+that consists of 2-digit order mark, then a hyphen, and then a hostname
+of a machine to which this directory is related (like `12-example`). This
+directory may contain the following files or symbolic links:
 
 * Marker files. These files are generally zero-sized and made by `touch`
 command, and removed by `rm` (obviously).
@@ -272,6 +274,11 @@ link these files to it.
 
         * `../../templates.d/battery_cmd.colored`: Do the same, but colorize
         output: 0..20% is bright red, 21..50% is yellow, 51..100% is cyan.
+
+Note: if you wish to place a separator between two lines, name a directory
+using empty hostname. E.g., `31-` will place a separator after `30-...`,
+but before `32-...`. The contents of directory, which is used as a separator
+mark, is ignored.
 
 ### Configuring remote computers
 

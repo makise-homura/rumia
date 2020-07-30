@@ -164,7 +164,10 @@ do
     do
         SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
         MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
-        if [ -e $SCRIPTPATH/temp_enabled ]
+        if [ -z "$MACHINE" ]
+        then
+            echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
+        elif [ -e $SCRIPTPATH/temp_enabled ]
         then
             export MACHINE
             export SCRIPTPATH
