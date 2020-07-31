@@ -1,4 +1,5 @@
 #!/bin/sh
 command=`$SCRIPTPATH/ssh_cmd sudo get_battery`
 rawbatval=`$command`
+[ $rawbatval -lt 10 ] && rawbatval=" $rawbatval"
 [ $rawbatval -gt 99 ] && echo -n " $rawbatval% " || echo -n " $rawbatval % "
