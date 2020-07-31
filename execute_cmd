@@ -1,22 +1,108 @@
 #!/bin/bash
-MARKER=${MARKER:-ssh_enabled}
-. ./rumia.conf
-echo -e "\e[1;36;44m ****** Выполняем команду \"$@\". ****** \e[0m"
+
+EXECCMD_VERSION="0.1"
+
+CONFIGFILE=""
+HELPEXIT="no"
+VERSIONEXIT="no"
+while [ "$1" ]
+do
+    case "$1" in
+        "--config")
+            shift
+            CONFIGFILE="$1"
+        ;;
+        "--help")
+            HELPEXIT="yes"
+        ;;
+        "--version")
+            VERSIONEXIT="yes"
+        ;;
+        "--")
+            shift
+            break
+        ;;
+        *)
+            break
+        ;;
+    esac
+    shift
+done
+
+if [ "$CONFIGFILE" ]
+then
+    if [ -f "$CONFIGFILE" ]
+    then
+        . $CONFIGFILE
+    else
+        echo "No config file $CONFIGFILE found, terminating."
+        exit 16
+    fi
+else
+    [ -f "/etc/rumia.conf" ] && . /etc/rumia.conf
+    [ -f "~/.config/rumia.conf" ] && . ~/.config/rumia.conf
+    [ -f "~/.rumiarc" ] && . ~/.rumiarc
+    [ -f "./rumia.conf" ] && . ./rumia.conf
+fi
+
+if [ -z "$PREFIX" ]
+then
+    echo "No PREFIX variable defined, terminating. Maybe there's no configs at all?"
+    exit 17
+fi
+
+LANGFILE="$PREFIX/language.$RUMIA_LANG"
+if [ ! -f $LANGFILE ]
+then
+    echo "No language file $LANGFILE found, terminating."
+    exit 15
+fi
+
+. $LANGFILE
+
+if [ "$HELPEXIT" = "yes" ]
+then
+    echo "$MSG_EXECCMDHELP_0"
+    echo "$MSG_EXECCMDHELP_1"
+    echo "$MSG_EXECCMDHELP_2"
+    echo "$MSG_EXECCMDHELP_3"
+    echo "$MSG_EXECCMDHELP_4"
+    echo "$MSG_EXECCMDHELP_5"
+    echo "$MSG_EXECCMDHELP_6"
+    echo "$MSG_EXECCMDHELP_7"
+    echo "$MSG_EXECCMDHELP_8"
+    exit 0
+fi
+
+if [ "$VERSIONEXIT" = "yes" ]
+then
+    echo "${MSG_EXECCMDVERS_0}${EXECCMD_VERSION}${MSG_EXECCMDVERS_1}"
+    exit 0
+fi
+
+echo -e "${MSG_RUNNINGHDR_0}$@${MSG_RUNNINGHDR_1}"
 for SCRIPTDIR in `ls $COMPUTERS_D`
 do
     export SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
     export MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
-    if [ -e $SCRIPTPATH/$MARKER ]
+    if [ "$MACHINE" ]
     then
-        if $SCRIPTPATH/ping_cmd
+        if [ "$MACHINES" ]
         then
-            echo -e "\n\e[1;32m--- Выполняем команду на машине $MACHINE: ---\e[0m\n"
-            `$SCRIPTPATH/ssh_cmd $@`
-        else
-            echo -e "\n\e[1;31m--- Машина $MACHINE недоступна. ---\e[0m"
+            echo " $MACHINES " | grep -qv [[:space:]]$MACHINE[[:space:]] && continue
         fi
-    else
-        echo -e "\n\e[1;33m--- Машина $MACHINE пропускается. ---\e[0m"
+        if [ -e $SCRIPTPATH/$SMARKER ]
+        then
+            if $SCRIPTPATH/ping_cmd
+            then
+                echo -e "\n${MSG_RUNNINGMACH_0}${MACHINE}${MSG_RUNNINGMACH_1}"
+                `$SCRIPTPATH/ssh_cmd -- "$@"`
+            else
+                echo -e "\n${MSG_SLEEPINGMACH_0}${MACHINE}${MSG_SLEEPINGMACH_1}"
+            fi
+        else
+            echo -e "\n${MSG_SKIPPINGMACH_0}${MACHINE}${MSG_SKIPPINGMACH_1}"
+        fi
     fi
 done
 echo

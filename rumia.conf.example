@@ -3,4 +3,5 @@ COMPUTERS_D=${COMPUTERS_D:-$PREFIX/computers.d}
 LOGFILE=${LOGFILE:-$PREFIX/temperatures.log}
 RUMIA_LANG=${RUMIA_LANG:-ru_RU}
 MARKER=${MARKER:-temp_enabled}
+SMARKER=${SMARKER:-ssh_enabled}
 DELAY=${DELAY:-600}

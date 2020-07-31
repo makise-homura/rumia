@@ -51,6 +51,10 @@ available languages are `en_US` and `ru_RU`. The corresponding
 to RUMIA. Usually this is `temp_enabled`. For further information, see below
 for a meaning of `temp_enabled` file.
 
+* `SMARKER` should be a name of a marker file that makes a computer visible
+to `execute_cmd`. Usually this is `ssh_enabled`. For further information, see
+below for a meaning of `ssh_enabled` file.
+
 * `DELAY` should be set to a seconds between end of one shot and begin of the
 following (Note: it's not the time between start of each shot, so actual period
 time is equal to time consumed by one shot and this delay).
@@ -106,6 +110,17 @@ command, and removed by `rm` (obviously).
     will be polled ten times more often. Of course, it might be not a subset,
     but a completely different set that may or may not have a non-empty
     intersection with the first one.
+
+    * `ssh_enabled`: The same for `execute_cmd`. Every computer that
+    does not have this marker is skipped when `ssh_enabled is called`. As well
+    as with `temp_enabled`, the name of this marker file might be redefined
+    by a `SMARKER` variable in the config file or in the command line; thus
+    you may have the single `computers.d` directory for different SSH commands.
+    E.g. you may have a generic marker, `ssh_enabled`, and `ssh_full_enabled`
+    for several computers that have more advanced set of binaries available.
+    Then you just may call `/opt/rumia/execute_cmd` for generic SSH commands,
+    and `SMARKER=ssh_full_enabled /opt/rumia/execute_cmd` for more advanced
+    commands to execute on computers that support them.
 
     * `absent`: Let RUMIA know that this computer is intentionally absent. If
     it can't be reached by `ping_cmd`, it produces "Sleep" message in the table
@@ -412,8 +427,51 @@ except the one for a computer currently being polled.
 
 ## Executing an arbitrary command
 
-***[TODO]*** (tell about MARKER variable, tell that for example, you may have
-`autofs_enabled` file in some cases). Default marker is `ssh_enabled`.
+To execute a command you may want to run on several machines that are in your
+`computers.d`, there is a `execute_cmd` script available. Generally, you may
+run it just in the form like:
+
+```bash
+./execute_cmd command
+```
+
+Here, `command` is a command that will be executed on every computer defined
+inside the `computers.d` directory that has specific marker file (it is named
+`ssh_enabled` by default).
+
+You can specify the following RUMIA parameters (before the actual command you
+wish to execute):
+
+* `--config <configfile>`;
+* `--help`;
+* `--version`.
+
+They have the exact same meaning as for RUMIA itself.
+
+Additionally, you may stop parsing parameters by specifying `--` after all
+`execute_cmd` parameters. So, `execute_cmd --help` will print help, but
+`execute_cmd -- --help` will try to run `--help` binary instead (but it is
+still useless in some cases, because bash and some other shells do not
+recognize `--help` as binary name). And `execute_cmd -- --` will try to run
+`--` binary in the same manner, by the way. Parameter parsing is stopped
+on the first unrecognized command line token, so `execute_cmd bash --help`
+will execute `bash --help`, and won't treat `--help` as `execute_cmd`
+parameter.
+
+Additionally, you may specify `MACHINES` environment variable to run
+`execute_cmd` for specific machines only, same as for RUMIA.
+
+**Note:** the command will be executed only on machines that have `ssh_enabled`
+marker file in their `computers.d` subdirectories; other machines will be
+skipped. You may redefine the name of this file by specifying it in `SMARKER`
+variable, like this:
+
+```bash
+SMARKER=autofs_enabled ./execute_cmd ls /autofs/mounts
+```
+
+This command will list contents of `/autofs/mounts` only on those computers
+that have `autofs_enabled` marker file in their `computers.d` subdirectories.
 
 ## Trivia
 

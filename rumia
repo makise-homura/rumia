@@ -55,6 +55,12 @@ else
     [ -f "./rumia.conf" ] && . ./rumia.conf
 fi
 
+if [ -z "$PREFIX" ]
+then
+    echo "No PREFIX variable defined, terminating. Maybe there's no configs at all?"
+    exit 17
+fi
+
 LANGFILE="$PREFIX/language.$RUMIA_LANG"
 if [ ! -f $LANGFILE ]
 then
@@ -64,7 +70,7 @@ fi
 
 . $LANGFILE
 
-if [ "$PARAMETEREXIT" = "yes" ]
+if [ "$HELPEXIT" = "yes" ]
 then
     echo "$MSG_RUMIAHELP_0"
     echo "$MSG_RUMIAHELP_1"
