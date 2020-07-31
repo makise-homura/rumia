@@ -40,8 +40,16 @@ files, and, in typical installation, `computers.d` and `templates.d` dirs.
 to `PREFIX` if BASH variable substitution is used.
 
 * `LOGFILE` should be a path to log file which will be appended with a complete
-information assembled during each shot. May be relative to `PREFIX` if BASH
-variable substitution is used.
+temperature information assembled during each shot. May be relative to `PREFIX`
+if BASH variable substitution is used. Log file consists of lines that have
+the current time of a shot, followed by several tab-separated records in format
+like `hostname:N=T`, where `hostname` is a hostname of a machine, `N` is
+a number of the temperature sensor, and `T` is a temperature that has been read
+from this sensor.
+
+Log file remains closed all time except the exact moments when information is
+appended to it, so you may freely delete or move it even when RUMIA is running:
+no stalled file handles will be left there.
 
 * `RUMIA_LANG` should be set according to a desired language. Currently
 available languages are `en_US` and `ru_RU`. The corresponding
@@ -345,7 +353,8 @@ For RUMIA to be able to check CPU temperatures, you should copy one of the
 that user to `sudoers` file. If none of these scripts are useful for you,
 you may write your own based on supplied scripts as examples. It should read
 the value of temperature sensor with number specified in `$1` (starting from 0)
-and print it as a fixed point value from 0.0 to 99.9, or print 99.9 on error.
+and print it as a fixed point value from `0.0` to `99.9`, or print `99.9`
+on error.
 
 ## Running a monitoring system
 
