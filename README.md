@@ -45,11 +45,9 @@ if BASH variable substitution is used. Log file consists of lines that have
 the current time of a shot, followed by several tab-separated records in format
 like `hostname:N=T`, where `hostname` is a hostname of a machine, `N` is
 a number of the temperature sensor, and `T` is a temperature that has been read
-from this sensor.
-
-Log file remains closed all time except the exact moments when information is
-appended to it, so you may freely delete or move it even when RUMIA is running:
-no stalled file handles will be left there.
+from this sensor. Log file remains closed all time except the exact moments
+when information is appended to it, so you may freely delete or move it even
+when RUMIA is running: no stalled file handles will be left there.
 
 * `RUMIA_LANG` should be set according to a desired language. Currently
 available languages are `en_US` and `ru_RU`. The corresponding
@@ -133,9 +131,10 @@ command, and removed by `rm` (obviously).
     * `absent`: Let RUMIA know that this computer is intentionally absent. If
     it can't be reached by `ping_cmd`, it produces "Sleep" message in the table
     instead of "Dead", so it could be considered not a failure that needs
-    attention. Makes no sense if `temp_enabled` doesn't exist.
+    attention.
 
-    * other `*_enabled` files: useful when running `execute_cmd` (see below).
+    * other `*_enabled` files: useful when running `execute_cmd` or `rumia`
+    with non-default marker files by using `MARKER` and `SMARKER` variables.
 
 * Data files. These files are generally symlinks to data files inside
 `templates.d` subdirectory, except when a file is supposed to be unique (e.g.
@@ -154,14 +153,13 @@ SSH private key or computer's fancy name).
     "div193-host195.organization.com" could have a fancy name of "Host 195");
     or it could be a beautifized name using symbols that are not allowed in
     a typical hostname (e.g. host "twilight-sparkle" may have fancy name of
-    "Твайлайт" in Russian language). Makes no sense if `temp_enabled` doesn't
-    exist. If fancy name or hostname (when fancy name is not used) is longer
-    than 8 characters, it will be truncated.
+    "Твайлайт" in Russian language). If fancy name or hostname (when fancy name
+    is not used) is longer than 8 characters, it will be truncated.
 
     * `temp_nodes`: Number of temperatures that are readable from a computer.
     If missing, no temperature or battery level check is performed. Usually it
     is a symlink to `../../templates.d/nodes.*` file which contains the desired
-    number. Has no effect if `temp_enabled` is missing.
+    number.
 
     * `temp_alert`: Alerting temperature value. Temperatures lower that that
     are shown in gray, higher (but below critical) are shown in yellow. Has
@@ -272,7 +270,10 @@ link these files to it.
         through an SSH session to remote computer (using `ssh_cmd`'s output).
 
     * `cpuget_cmd`: Print a CPU utilization of remote computer. Return value
-    does not matter. Could be symlinked to:
+    does not matter. Should print exactly 6 characters, of which leading and
+    trailing ones are spaces, and should not produce a newline after that (so
+    actual output should look like what commands `echo -n " 95 % "`,
+    `echo -n "  2 % "`, or `echo -n " 100% "` produce. Could be symlinked to:
 
         * `../../templates.d/cpuget_cmd.mpstat`: calling `mpstat` command
         through an SSH session to remote computer (using `ssh_cmd`'s output).
@@ -280,11 +281,12 @@ link these files to it.
         80..100% is bright white.
 
     * `tempget_cmd`: Print a temperature of remote computer's sensor number
-    `$1`, starting from 0, or print "`99.9`" on error. Return value does not
-    matter. Maximum 7 temperature sensors are now supported, and 6 if the last
-    position is occupied by battery sensor. Actual number of sensors are
-    specified in `temp_nodes` file inside computer's subdirectory in
-    `computers.d`. Could be symlinked to:
+    `$1`, starting from 0, or print "`99.9`" on error. Should print exactly 4
+    characters (but may produce a newline). Return value does not matter.
+    Maximum 7 temperature sensors are now supported, and 6 if the last position
+    is occupied by battery sensor. Actual number of sensors are specified in
+    `temp_nodes` file inside computer's subdirectory in `computers.d`. Could be
+    symlinked to:
 
         * `../../templates.d/tempget_cmd.generic`: Call `get_temperature`
         by SSH (using `ssh_cmd`'s output) passing the first parameter to it.
@@ -306,7 +308,10 @@ link these files to it.
         `/dev/nvme0n1`.
 
     * `battery_cmd`: Print a battery level of remote computer. Return value
-    does not matter. Could be symlinked to:
+    does not matter. Should print exactly 6 characters, of which leading and
+    trailing ones are spaces, and should not produce a newline after that (so
+    actual output should look like what commands `echo -n " 95 % "`,
+    `echo -n "  2 % "`, or `echo -n " 100% "` produce. Could be symlinked to:
 
         * `../../templates.d/battery_cmd.uncolored`: Print remote computer's
         battery level, connecting to it by SSH (using `ssh_cmd`'s output)
@@ -318,7 +323,8 @@ link these files to it.
 **Note:** if you wish to place a separator between two lines, name a directory
 using empty hostname. E.g., `31-` will place a separator after `30-...`,
 but before `32-...`. The contents of directory, which is used as a separator
-mark, is ignored, except for specific marker files (see `temp_enabled` above).
+mark, is ignored by `rumia`, except for chosen marker file (see `temp_enabled`
+above), and totally ignored by `execute_cmd`.
 
 ### Configuring remote computers
 
@@ -331,6 +337,10 @@ Other things require execution of some commands in a SSH session.
 
 For RUMIA to be able to monitor uptime of remote computer, it should have
 `uptime` command (most POSIX-compliant OS do).
+
+For RUMIA to be able to monitor CPU load of remote computer, it should have
+`mpstat` command (in most Debian and Red Hat based OS it is contained within
+the `sysstat` package).
 
 For RUMIA to be able to check HDD state, you should copy
 `remote_scripts/get_hdd_state` to the remote computer as `get_hdd_state`
@@ -345,6 +355,8 @@ log in as user other than root, you might need to add that user to `sudoers`
 file. If none of these scripts are useful for you, you may write your own based
 on supplied scripts as examples. It should read the battery value of your
 system and print it as a decimal value from 0 to 100, or print 0 on error.
+Output should not contain leading and trailing spaces, but may contain
+a trailing newline.
 
 For RUMIA to be able to check CPU temperatures, you should copy one of the
 `remote_scripts/get_temperature_*` scripts to the remote computer as
@@ -354,7 +366,8 @@ that user to `sudoers` file. If none of these scripts are useful for you,
 you may write your own based on supplied scripts as examples. It should read
 the value of temperature sensor with number specified in `$1` (starting from 0)
 and print it as a fixed point value from `0.0` to `99.9`, or print `99.9`
-on error.
+on error. Output should not contain leading and trailing spaces, but may
+contain a trailing newline.
 
 ## Running a monitoring system
 
@@ -426,10 +439,10 @@ foreground) to stop performing its operation and exit.
 
 If you ran it not in one shot mode, you may also send `SIGUSR1` to it while
 it's in pause state, and RUMIA will prematurely end the pause state, clear
-screen again, and immediately start next shot. The corresponding hint is
+the screen again, and immediately start next shot. The corresponding hint is
 displayed in top of the screen (if not in one shot mode).
 
-**Note:** if USR1 is not signaled, RUMIA won't clear screen once pause state
+**Note:** if `USR1` is not signaled, RUMIA won't clear screen once pause state
 is finished. Next shot will redraw each line separately, so even when RUMIA
 performs a shot, you still have all information still available on the screen,
 except the one for a computer currently being polled.
@@ -486,7 +499,7 @@ that have `autofs_enabled` marker file in their `computers.d` subdirectories.
 
 Actually, [Rumia](https://en.touhouwiki.net/wiki/Rumia) is a youkai girl from
 Touhou Project series, and she is known for some of her gastronomic addictions
-and appetite; same as Rumia from Touhou consumes her victims, RUMIA consumes
+and appetite; just like Rumia from Touhou consumes her victims, RUMIA consumes
 (and aggregates) information from computers configured.
 
 Now live with this information. :-)
