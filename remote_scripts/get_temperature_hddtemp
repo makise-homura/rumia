@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "scale=1; `hddtemp -n /dev/sda` * 10 / 10" | bc
