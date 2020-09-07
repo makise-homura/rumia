@@ -248,7 +248,7 @@ do
                     # Check CPU load
                     if [ -x $SCRIPTPATH/cpuget_cmd ]
                     then
-                        $SCRIPTPATH/cpuget_cmd
+                        $SCRIPTPATH/cpuget_cmd 2>/dev/null
                     else
                         echo -n " ---- "
                     fi
