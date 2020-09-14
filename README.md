@@ -324,7 +324,9 @@ link these files to it.
 using empty hostname. E.g., `31-` will place a separator after `30-...`,
 but before `32-...`. The contents of directory, which is used as a separator
 mark, is ignored by `rumia`, except for chosen marker file (see `temp_enabled`
-above), and totally ignored by `execute_cmd`.
+above), and totally ignored by `execute_cmd`. For example, to appear in generic
+run of `rumia`, such separator's directory should contain `temp_enabled`
+marker.
 
 ### Configuring remote computers
 
