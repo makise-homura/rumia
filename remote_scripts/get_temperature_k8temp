@@ -1,0 +1,24 @@
+#!/bin/bash
+modprobe k8temp
+truemon=""
+for mon in `ls /sys/class/hwmon`
+do
+    name=`cat /sys/class/hwmon/${mon}/name`
+    if [ "${name}" = "k8temp" ]
+    then
+        truemon=/sys/class/hwmon/${mon}
+    fi
+done
+if [ -z "${truemon}" ]
+then
+    echo "99.9"
+    exit 1
+fi
+TEMPS=(${truemon}/temp*_input)
+input=${TEMPS[$1]}
+if [ -z "${input}" ]
+then
+    echo "99.9"
+else
+    echo "scale = 1; `cat ${input}` / 1000" | bc
+fi
