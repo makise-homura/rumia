@@ -235,7 +235,7 @@ do
                     # Check HDD
                     if [ -x $SCRIPTPATH/gethdd_cmd ]
                     then
-                        if $SCRIPTPATH/gethdd_cmd
+                        if $SCRIPTPATH/gethdd_cmd 2>/dev/null
                         then
                             echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
                         else
