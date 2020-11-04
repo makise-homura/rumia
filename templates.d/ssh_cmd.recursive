@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "ssh -l root -i $SCRIPTPATH/key `cat $SCRIPTPATH/vpngw_host` -C ssh -l root -i /root/keys/$MACHINE.pk $MACHINE -C $@"
+echo "ssh -o ConnectTimeout=10 -l root -i $SCRIPTPATH/key `cat $SCRIPTPATH/vpngw_host` -C ssh -l root -i /root/keys/$MACHINE.pk $MACHINE -C $@"

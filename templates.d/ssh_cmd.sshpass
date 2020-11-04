@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh -l root $MACHINE -C $@"
+echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh -o ConnectTimeout=10 -l root $MACHINE -C $@"

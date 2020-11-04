@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "ssh -l `cat $SCRIPTPATH/vpngw_user` -i $SCRIPTPATH/key -p `cat $SCRIPTPATH/vpngw_port` `cat $SCRIPTPATH/vpngw_host` -C $@"
+echo "ssh -o ConnectTimeout=10 -l `cat $SCRIPTPATH/vpngw_user` -i $SCRIPTPATH/key -p `cat $SCRIPTPATH/vpngw_port` `cat $SCRIPTPATH/vpngw_host` -C $@"
