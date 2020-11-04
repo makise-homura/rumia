@@ -1,4 +1,5 @@
 #!/bin/sh
+modprobe k10temp
 i=`echo "$1 + 1" | bc`
 truemon=""
 for mon in `ls /sys/class/hwmon`
