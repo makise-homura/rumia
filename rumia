@@ -101,6 +101,7 @@ DELAYPID=""
 trap "restart" SIGUSR1
 restart()
 {
+    RESTART="yes"
     if [ "$DELAYPID" ]
     then
         [ "$ENABLE_CLEAR" = "yes" ] && clear
@@ -304,12 +305,26 @@ do
             fi
         fi
     done
-    echo "  ╚═════════════════════════════════════════════════════════════════════════════════════╝"
+    echo -ne "  ╚═════════════════════════════════════════════════════════════════════════════════════╝\r"
     tput smam
-    [ "$ENABLE_ONESHOT" = "yes" ] && break
+    if [ "$ENABLE_ONESHOT" = "yes" ]
+    then
+        echo
+        break
+    fi
     [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE
-    sleep $DELAY &
-    DELAYPID=$!
-    wait $DELAYPID
-    DELAYPID=""
+
+    RESTART="no"
+    SHOTDATE=`date "+$MSG_DATEFMT"`
+    SEC=$DELAY
+    while [ $SEC -ge 0 ]
+    do
+        echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_REMAINING}${SEC}/${DELAY}${MSG_SECONDS} ]═\r"
+        sleep 1 &
+        DELAYPID=$!
+        wait $DELAYPID
+        DELAYPID=""
+        [ "$RESTART" = "yes" ] && break
+        SEC=`echo $SEC - 1 | bc`
+    done
 done
