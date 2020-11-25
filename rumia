@@ -178,6 +178,7 @@ do
             else
                 export MACHINE
                 export SCRIPTPATH
+                export SSH_OPTS
 
                 # Show fancy name
                 if [ "$ENABLE_FANCYNAMES" = "yes" -a -e "$SCRIPTPATH/fancyname" ]

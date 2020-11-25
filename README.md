@@ -65,6 +65,9 @@ below for a meaning of `ssh_enabled` file.
 following (Note: it's not the time between start of each shot, so actual period
 time is equal to time consumed by one shot and this delay).
 
+* `SSH_OPTS` should be a bunch of additional options passed to each call to
+`ssh` command. Used primarily for setting timeouts.
+
 All variables are set using generic BASH syntax, e.g. no spaces should be
 between variable name, "=" sign, and variable value; values containing
 spaces must be enclosed in double or single quotes; BASH variable substitutions
@@ -206,10 +209,11 @@ SSH private key or computer's fancy name).
 * Command files. These files are generally symlinks to the files inside
 `templates.d` subdirectory which are bash scripts (they should have appropriate
 permissions) that perform some command on a remote computer.
-each of them could use the following two exported environment variables:
+each of them could use the following three exported environment variables:
 `$MACHINE` (a name of computer, as it is specified in the name of corresponding
-directory inside `computers.d`), and `$SCRIPTPATH` (which is the actual path to
-subdirectory related to this computer under `computers.d`). If you have
+directory inside `computers.d`), `$SCRIPTPATH` (which is the actual path to
+subdirectory related to this computer under `computers.d`), and `$SSH_OPTS`
+(which is the additional options passed to SSH command, if used). If you have
 a specific requirement, you may put your own script(s) in `templates.d`, and
 link these files to it.
 
