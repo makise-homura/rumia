@@ -327,4 +327,5 @@ do
         [ "$RESTART" = "yes" ] && break
         SEC=`echo $SEC - 1 | bc`
     done
+    echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_UPDATING} ]══════════════\r" # it could be enough of "═" if lengths of MSG_REMAINING, DELAY, MSG_SECONDS, and MSG_UPDATING are sane.
 done
