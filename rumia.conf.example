@@ -5,4 +5,4 @@ RUMIA_LANG=${RUMIA_LANG:-ru_RU}
 MARKER=${MARKER:-temp_enabled}
 SMARKER=${SMARKER:-ssh_enabled}
 DELAY=${DELAY:-600}
-SSH_OPTS=${SSH_OPTS:-"-o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=2"}
+SSH_OPTS=${SSH_OPTS:-"-o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=2 -o PreferredAuthentications=publickey -o StrictHostKeyChecking=yes"}

@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh $SSH_OPTS -l root $MACHINE -C $@"
+echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh -o PreferredAuthentications=password $SSH_OPTS -l root $MACHINE -C $@"
