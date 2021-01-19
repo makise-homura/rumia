@@ -270,8 +270,15 @@ link these files to it.
     * `uptime_cmd`: Print an uptime of remote computer. Return value does not
     matter. Could be symlinked to:
 
-        * `../../templates.d/uptime_cmd.generic`: calling `uptime` command
+        * `../../templates.d/uptime_cmd.generic`: calling GNU `uptime` command
         through an SSH session to remote computer (using `ssh_cmd`'s output).
+
+        * `../../templates.d/uptime_cmd.windows`: calling Windows `uptime.exe`
+        command through an SSH session to remote computer (using `ssh_cmd`'s
+        output). You may download the corresponding `uptime.exe` binary
+        [here](http://barnyard.syr.edu/~vefatica/#UPTIME). It is not the one
+        made by Microsoft, since Microsoft's one doesn't work if being run
+        by unprivileged user.
 
     * `cpuget_cmd`: Print a CPU utilization of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
