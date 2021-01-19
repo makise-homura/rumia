@@ -1,2 +1,2 @@
 #!/bin/sh
-`$SCRIPTPATH/ssh_cmd uptime.exe` | grep Uptime: | sed 's/Uptime:\t/up /;s/days/days,/;s/ hours /:/;s/ minutes.*//'
+`$SCRIPTPATH/ssh_cmd uptime.exe -T` | cut -d: -f-3 | sed 's/^/up /;s/:/ days, /;'
