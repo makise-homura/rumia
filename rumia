@@ -39,69 +39,29 @@ do
     shift
 done
 
-if [ "$CONFIGFILE" ]
-then
-    if [ -f "$CONFIGFILE" ]
-    then
-        . $CONFIGFILE
-    else
-        echo "No config file $CONFIGFILE found, terminating."
-        exit 16
-    fi
-else
-    [ -f "/etc/rumia.conf" ] && . /etc/rumia.conf
-    [ -f "~/.config/rumia.conf" ] && . ~/.config/rumia.conf
-    [ -f "~/.rumiarc" ] && . ~/.rumiarc
-    [ -f "./rumia.conf" ] && . ./rumia.conf
-fi
-
-if [ -z "$PREFIX" ]
-then
-    echo "No PREFIX variable defined, terminating. Maybe there's no configs at all?"
-    exit 17
-fi
-
-LANGFILE="$PREFIX/language.$RUMIA_LANG"
-if [ ! -f $LANGFILE ]
-then
-    echo "No language file $LANGFILE found, terminating."
-    exit 15
-fi
-
-. $LANGFILE
-
-if [ "$HELPEXIT" = "yes" ]
-then
-    echo "$MSG_RUMIAHELP_0"
-    echo "$MSG_RUMIAHELP_1"
-    echo "$MSG_RUMIAHELP_2"
-    echo "$MSG_RUMIAHELP_3"
-    echo "$MSG_RUMIAHELP_4"
-    echo "$MSG_RUMIAHELP_5"
-    echo "$MSG_RUMIAHELP_6"
-    echo "$MSG_RUMIAHELP_7"
-    echo "$MSG_RUMIAHELP_8"
-    echo "$MSG_RUMIAHELP_9"
-    exit 0
-fi
-
-if [ "$VERSIONEXIT" = "yes" ]
-then
-    echo "${MSG_RUMIAVERS_0}${RUMIA_VERSION}${MSG_RUMIAVERS_1}"
-    exit 0
-fi
-
-if [ "$PARAMETEREXIT" = "yes" ]
-then
-    echo "${MSG_PARAMEXIT_0}${WRONGPARAMETER}${MSG_PARAMEXIT_1}"
-    exit 16
-fi
-
 DELAYPID=""
 trap "restart" SIGUSR1
 restart()
 {
     RESTART="yes"
+    if [ "$DELAYPID" ]
+    then
+        [ "$ENABLE_CLEAR" = "yes" ] && clear
+        kill -INT $DELAYPID
+    fi
+}
+
+trap "reload" SIGUSR2
+reload()
+{
+    RELOAD="yes"
+    PREFIX=
+    COMPUTERS_D=
+    LOGFILE=
+    RUMIA_LANG=
+    MARKER=
+    DELAY=
+    SSH_OPTS=
     if [ "$DELAYPID" ]
     then
         [ "$ENABLE_CLEAR" = "yes" ] && clear
@@ -120,212 +80,271 @@ quit()
     exit 0
 }
 
-# Computer directory must/may be populated with:
-#   output scripts (print text value): uptime_cmd, cpuget_cmd, tempget_cmd, battery_cmd
-#   checker scripts (return code): ping_cmd (mandatory), gethdd_cmd
-#   textfiles: fancyname, temp_nodes, temp_alert, temp_crit, vpngw_port
-#   markers: temp_enabled, ssh_enabled, absent
-# Scripts may use:
-#   exports: MACHINE, SCRIPTPATH
-
-MYPID="$$"
-pidlength=`echo -n $MYPID | wc -c`
-padding=""
-for i in `seq 4 -1 $pidlength` ; do padding=" $padding"; done
-MYPID="${padding}$MYPID"
-if [ "$ENABLE_CLEAR" = "yes" ]
-then
-    [ "$ENABLE_ONESHOT" = "yes" ] || tput smcup
-    clear
-fi
-
-if [ "$MACHINES" ]
-then
-    savemachines="yes"
-    NEWMACHINES=""
-    for machine in $MACHINES
-    do
-        newmachine=`ls $COMPUTERS_D | grep -- "-$machine\$"`
-        NEWMACHINES="$NEWMACHINES $newmachine"
-    done
-    MACHINES="$NEWMACHINES"
-else
-    savemachines="no"
-fi
-
 while true
 do
-    [ "$ENABLE_CLEAR" = "yes" ] && echo -ne "\e[H\n"
-    tput rmam
-    if [ "$ENABLE_ONESHOT" = "yes" ]
+    if [ "$CONFIGFILE" ]
     then
-        echo "  ╔═ RUMIA v$RUMIA_VERSION ════════════════════════════════════════════════════════════════════════╗"
-    else
-        echo -e "  ╔═ RUMIA v$RUMIA_VERSION ══════════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
-    fi
-    echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_CPU $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
-    echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
-    log_str="`date`"
-    [ "$savemachines" = "no" ] && MACHINES="`ls $COMPUTERS_D`"
-    for SCRIPTDIR in $MACHINES
-    do
-        SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
-        MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
-        if [ -e $SCRIPTPATH/$MARKER ]
+        if [ -f "$CONFIGFILE" ]
         then
-            if [ -z "$MACHINE" ]
+            . $CONFIGFILE
+        else
+            echo "No config file $CONFIGFILE found, terminating."
+            exit 16
+        fi
+    else
+        [ -f "/etc/rumia.conf" ] && . /etc/rumia.conf
+        [ -f "~/.config/rumia.conf" ] && . ~/.config/rumia.conf
+        [ -f "~/.rumiarc" ] && . ~/.rumiarc
+        [ -f "./rumia.conf" ] && . ./rumia.conf
+    fi
+
+    if [ -z "$PREFIX" ]
+    then
+        echo "No PREFIX variable defined, terminating. Maybe there's no configs at all?"
+        exit 17
+    fi
+
+    LANGFILE="$PREFIX/language.$RUMIA_LANG"
+    if [ ! -f $LANGFILE ]
+    then
+        echo "No language file $LANGFILE found, terminating."
+        exit 15
+    fi
+
+    . $LANGFILE
+
+    if [ "$HELPEXIT" = "yes" ]
+    then
+        echo "$MSG_RUMIAHELP_0"
+        echo "$MSG_RUMIAHELP_1"
+        echo "$MSG_RUMIAHELP_2"
+        echo "$MSG_RUMIAHELP_3"
+        echo "$MSG_RUMIAHELP_4"
+        echo "$MSG_RUMIAHELP_5"
+        echo "$MSG_RUMIAHELP_6"
+        echo "$MSG_RUMIAHELP_7"
+        echo "$MSG_RUMIAHELP_8"
+        echo "$MSG_RUMIAHELP_9"
+        exit 0
+    fi
+
+    if [ "$VERSIONEXIT" = "yes" ]
+    then
+        echo "${MSG_RUMIAVERS_0}${RUMIA_VERSION}${MSG_RUMIAVERS_1}"
+        exit 0
+    fi
+
+    if [ "$PARAMETEREXIT" = "yes" ]
+    then
+        echo "${MSG_PARAMEXIT_0}${WRONGPARAMETER}${MSG_PARAMEXIT_1}"
+        exit 16
+    fi
+
+    # Computer directory must/may be populated with:
+    #   output scripts (print text value): uptime_cmd, cpuget_cmd, tempget_cmd, battery_cmd
+    #   checker scripts (return code): ping_cmd (mandatory), gethdd_cmd
+    #   textfiles: fancyname, temp_nodes, temp_alert, temp_crit, vpngw_port
+    #   markers: temp_enabled, ssh_enabled, absent
+    # Scripts may use:
+    #   exports: MACHINE, SCRIPTPATH
+
+    MYPID="$$"
+    pidlength=`echo -n $MYPID | wc -c`
+    padding=""
+    for i in `seq 4 -1 $pidlength` ; do padding=" $padding"; done
+    MYPID="${padding}$MYPID"
+    if [ "$ENABLE_CLEAR" = "yes" ]
+    then
+        [ "$ENABLE_ONESHOT" = "yes" ] || tput smcup
+        clear
+    fi
+
+    MACHINEDIRS=""
+    if [ "$MACHINES" ]
+    then
+        for machine in $MACHINES
+        do
+            machinedir=`ls $COMPUTERS_D | grep -- "-$machine\$"`
+            MACHINEDIRS="$MACHINEDIRS $machinedir"
+        done
+    fi
+
+    while true
+    do
+        [ "$ENABLE_CLEAR" = "yes" ] && echo -ne "\e[H\n"
+        tput rmam
+        if [ "$ENABLE_ONESHOT" = "yes" ]
+        then
+            echo "  ╔═ RUMIA v$RUMIA_VERSION ════════════════════════════════════════════════════════════════════════╗"
+        else
+            echo -e "  ╔═ RUMIA v$RUMIA_VERSION ══════════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
+        fi
+        echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_CPU $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
+        echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
+        log_str="`date`"
+        [ -z "$MACHINEDIRS" ] && MACHINEDIRS="`ls $COMPUTERS_D`"
+        for SCRIPTDIR in $MACHINEDIRS
+        do
+            SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
+            MACHINE=`echo $SCRIPTDIR | sed 's/[0-9][0-9]-//'`
+            if [ -e $SCRIPTPATH/$MARKER ]
             then
-                echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
-            else
-                export MACHINE
-                export SCRIPTPATH
-                export SSH_OPTS
-
-                # Show fancy name
-                if [ "$ENABLE_FANCYNAMES" = "yes" -a -e "$SCRIPTPATH/fancyname" ]
+                if [ -z "$MACHINE" ]
                 then
-                    machine_name=`cat $SCRIPTPATH/fancyname`
+                    echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
                 else
-                    machine_name=$MACHINE
-                fi
-                machine_nodes=""
-                if [ -e $SCRIPTPATH/temp_nodes ]
-                then
-                    machine_nodes=`cat $SCRIPTPATH/temp_nodes`
-                    [ "$machine_nodes" ] && if [ "$machine_nodes" -gt 0 ]
+                    export MACHINE
+                    export SCRIPTPATH
+                    export SSH_OPTS
+
+                    # Show fancy name
+                    if [ "$ENABLE_FANCYNAMES" = "yes" -a -e "$SCRIPTPATH/fancyname" ]
                     then
-                        machine_alert=`cat $SCRIPTPATH/temp_alert`
-                        machine_crit=`cat $SCRIPTPATH/temp_crit`
-                    fi
-                fi
-                echo -ne "                                                                                        ║\r  ║  $machine_name\r\e[14C"
-
-                # Check if we have all required tools
-                CONDITIONS_MET="yes"
-                if [ -f "$SCRIPTPATH/require" ]
-                then
-                    for requirement in `cat $SCRIPTPATH/require`
-                    do
-                        cmd_path=`which $requirement 2>/dev/null`
-                        if [ ! "$cmd_path" ]
-                        then
-                            CONDITIONS_MET="no"
-                        else
-                            [ ! -x "$cmd_path" ] && CONDITIONS_MET="no"
-                        fi
-                    done
-                fi
-                if [ "$CONDITIONS_MET" = "no" ]
-                then
-                    echo -e "\e[1;31m$MSG_REQUIREMENT_MISSING $requirement.\e[0m"
-                    continue
-                fi
-
-                # Check availability
-                if $SCRIPTPATH/ping_cmd
-                then
-
-                    # Check uptime
-                    struptime=""
-                    if [ -x $SCRIPTPATH/uptime_cmd ]
-                    then
-                        struptime=`$SCRIPTPATH/uptime_cmd 2>/dev/null | sed "$MSG_UPTIME_REGEXP"`
-                        [ -z "$struptime" ] && struptime="\e[1;31m$MSG_UNKNOWN\e[0m"
-                    fi
-                    echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
-
-                    # Check HDD
-                    if [ -x $SCRIPTPATH/gethdd_cmd ]
-                    then
-                        if $SCRIPTPATH/gethdd_cmd 2>/dev/null
-                        then
-                            echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
-                        else
-                            echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
-                        fi
+                        machine_name=`cat $SCRIPTPATH/fancyname`
                     else
-                        echo -ne "     "
+                        machine_name=$MACHINE
                     fi
-
-                    # Check CPU load
-                    if [ -x $SCRIPTPATH/cpuget_cmd ]
+                    machine_nodes=""
+                    if [ -e $SCRIPTPATH/temp_nodes ]
                     then
-                        $SCRIPTPATH/cpuget_cmd 2>/dev/null
-                    else
-                        echo -n " ---- "
+                        machine_nodes=`cat $SCRIPTPATH/temp_nodes`
+                        [ "$machine_nodes" ] && if [ "$machine_nodes" -gt 0 ]
+                        then
+                            machine_alert=`cat $SCRIPTPATH/temp_alert`
+                            machine_crit=`cat $SCRIPTPATH/temp_crit`
+                        fi
                     fi
+                    echo -ne "                                                                                        ║\r  ║  $machine_name\r\e[14C"
 
-                    # Check temperatures and battery level
-                    if [ "$machine_nodes" ]
+                    # Check if we have all required tools
+                    CONDITIONS_MET="yes"
+                    if [ -f "$SCRIPTPATH/require" ]
                     then
-                        max_node=`echo $machine_nodes - 1 | bc`
-                        for node in `seq 0 6`
+                        for requirement in `cat $SCRIPTPATH/require`
                         do
-                            if [ ! $node -gt $max_node -a -x $SCRIPTPATH/tempget_cmd ]
+                            cmd_path=`which $requirement 2>/dev/null`
+                            if [ ! "$cmd_path" ]
                             then
-                                # Temperature
-                                temp=`$SCRIPTPATH/tempget_cmd $node 2>/dev/null`
-                                [ -z "$temp" ] && temp="99.9"
-                                echo $temp | grep -qe '\.' || temp=$temp.0
-                                inttemp=`echo $temp | cut -d"." -f1`
-                                temp=`echo $temp | head -c4`
-                                color="0"
-                                [ $inttemp -ge $machine_alert ] && color="1;33"
-                                [ $inttemp -ge $machine_crit ] && color="1;31"
-                                echo -ne " \e[${color}m${temp}\e[0m "
-                                log_str="$log_str\t$MACHINE:$node=$temp"
+                                CONDITIONS_MET="no"
                             else
-                                # Battery level
-                                if [ $node -eq 6 ]
+                                [ ! -x "$cmd_path" ] && CONDITIONS_MET="no"
+                            fi
+                        done
+                    fi
+                    if [ "$CONDITIONS_MET" = "no" ]
+                    then
+                        echo -e "\e[1;31m$MSG_REQUIREMENT_MISSING $requirement.\e[0m"
+                        continue
+                    fi
+
+                    # Check availability
+                    if $SCRIPTPATH/ping_cmd
+                    then
+
+                        # Check uptime
+                        struptime=""
+                        if [ -x $SCRIPTPATH/uptime_cmd ]
+                        then
+                            struptime=`$SCRIPTPATH/uptime_cmd 2>/dev/null | sed "$MSG_UPTIME_REGEXP"`
+                            [ -z "$struptime" ] && struptime="\e[1;31m$MSG_UNKNOWN\e[0m"
+                        fi
+                        echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
+
+                        # Check HDD
+                        if [ -x $SCRIPTPATH/gethdd_cmd ]
+                        then
+                            if $SCRIPTPATH/gethdd_cmd 2>/dev/null
+                            then
+                                echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
+                            else
+                                echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
+                            fi
+                        else
+                            echo -ne "     "
+                        fi
+
+                        # Check CPU load
+                        if [ -x $SCRIPTPATH/cpuget_cmd ]
+                        then
+                            $SCRIPTPATH/cpuget_cmd 2>/dev/null
+                        else
+                            echo -n " ---- "
+                        fi
+
+                        # Check temperatures and battery level
+                        if [ "$machine_nodes" ]
+                        then
+                            max_node=`echo $machine_nodes - 1 | bc`
+                            for node in `seq 0 6`
+                            do
+                                if [ ! $node -gt $max_node -a -x $SCRIPTPATH/tempget_cmd ]
                                 then
-                                    if [ -x $SCRIPTPATH/battery_cmd ]
+                                    # Temperature
+                                    temp=`$SCRIPTPATH/tempget_cmd $node 2>/dev/null`
+                                    [ -z "$temp" ] && temp="99.9"
+                                    echo $temp | grep -qe '\.' || temp=$temp.0
+                                    inttemp=`echo $temp | cut -d"." -f1`
+                                    temp=`echo $temp | head -c4`
+                                    color="0"
+                                    [ $inttemp -ge $machine_alert ] && color="1;33"
+                                    [ $inttemp -ge $machine_crit ] && color="1;31"
+                                    echo -ne " \e[${color}m${temp}\e[0m "
+                                    log_str="$log_str\t$MACHINE:$node=$temp"
+                                else
+                                    # Battery level
+                                    if [ $node -eq 6 ]
                                     then
-                                        $SCRIPTPATH/battery_cmd
+                                        if [ -x $SCRIPTPATH/battery_cmd ]
+                                        then
+                                            $SCRIPTPATH/battery_cmd
+                                        else
+                                            echo -n " ---- "
+                                        fi
                                     else
                                         echo -n " ---- "
                                     fi
-                                else
-                                    echo -n " ---- "
                                 fi
-                            fi
-                        done
-                        echo ""
+                            done
+                            echo ""
+                        else
+                            echo " ----  ----  ----  ----  ----  ----  ---- "
+                        fi
                     else
-                        echo " ----  ----  ----  ----  ----  ----  ---- "
+                        if [ -e $SCRIPTPATH/absent ]
+                        then
+                            echo -ne "\e[1;34m$MSG_SLEEPING"
+                        else
+                            echo -ne "\e[1;31m$MSG_DEAD"
+                        fi
+                        echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ----  ---- "
                     fi
-                else
-                    if [ -e $SCRIPTPATH/absent ]
-                    then
-                        echo -ne "\e[1;34m$MSG_SLEEPING"
-                    else
-                        echo -ne "\e[1;31m$MSG_DEAD"
-                    fi
-                    echo -e "\e[0m                     ----  ----  ----  ----  ----  ----  ----  ---- "
                 fi
             fi
+        done
+        echo -ne "  ╚═════════════════════════════════════════════════════════════════════════════════════╝\r"
+        tput smam
+        if [ "$ENABLE_ONESHOT" = "yes" ]
+        then
+            echo
+            break
         fi
-    done
-    echo -ne "  ╚═════════════════════════════════════════════════════════════════════════════════════╝\r"
-    tput smam
-    if [ "$ENABLE_ONESHOT" = "yes" ]
-    then
-        echo
-        break
-    fi
-    [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE
+        [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE
 
-    RESTART="no"
-    SHOTDATE=`date "+$MSG_DATEFMT"`
-    SEC=$DELAY
-    while [ $SEC -ge 0 ]
-    do
-        echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_REMAINING}${SEC}/${DELAY}${MSG_SECONDS} ]═\r"
-        sleep 1 &
-        DELAYPID=$!
-        wait $DELAYPID
-        DELAYPID=""
-        [ "$RESTART" = "yes" ] && break
-        SEC=`echo $SEC - 1 | bc`
+        RESTART="no"
+        RELOAD="no"
+        SHOTDATE=`date "+$MSG_DATEFMT"`
+        SEC=$DELAY
+        while [ $SEC -ge 0 ]
+        do
+            echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_REMAINING}${SEC}/${DELAY}${MSG_SECONDS} ]═\r"
+            sleep 1 &
+            DELAYPID=$!
+            wait $DELAYPID
+            DELAYPID=""
+            [ "$RESTART" = "yes" -o "$RELOAD" = "yes" ] && break
+            SEC=`echo $SEC - 1 | bc`
+        done
+        [ "$RELOAD" = "yes" ] && break
+        [ "$RESTART" = "yes" ] || echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_UPDATING} ]══════════════\r" # it could be enough of "═" if lengths of MSG_REMAINING, DELAY, MSG_SECONDS, and MSG_UPDATING are sane.
     done
-    echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_UPDATING} ]══════════════\r" # it could be enough of "═" if lengths of MSG_REMAINING, DELAY, MSG_SECONDS, and MSG_UPDATING are sane.
 done

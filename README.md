@@ -397,9 +397,9 @@ You can specify the following parameters:
 * `--oneshot`: Perform only one shot and immediately exit. Don't write anything
 into a log file.
 
-* `--noclear`: Don't clear console screen on start or when USR1 is signaled;
-don't reposition cursor to the top of the screen on each new shot. Print new
-shot data just after the previous.
+* `--noclear`: Don't clear console screen on start, or when USR1 or USR2
+is signaled; don't reposition cursor to the top of the screen on each new
+shot. Print new shot data just after the previous.
 
 * `--config <configfile>`: Use predefined config file instead of default.
 Note: no other config files is read if this parameter is specified. The only
@@ -458,10 +458,18 @@ it's in pause state, and RUMIA will prematurely end the pause state, clear
 the screen again, and immediately start next shot. The corresponding hint is
 displayed in top of the screen (if not in one shot mode).
 
-**Note:** if `USR1` is not signaled, RUMIA won't clear screen once pause state
-is finished. Next shot will redraw each line separately, so even when RUMIA
-performs a shot, you still have all information still available on the screen,
-except the one for a computer currently being polled.
+You may also send `SIGUSR2`, and this will result in the same, but with
+clearing most of config file variables, like `PREFIX`, `COMPUTERS_D`,
+`LOGFILE`, `RUMIA_LANG`, `MARKER`, `DELAY`, and `SSH_OPTS`, and re-reading
+them from config file. It also means that if you're specified some of these
+variables in command line or environment, e.g. running rumia like
+`DELAY=60 rumia`, thus overriding values specified in config file, these
+overrides will be cancelled.
+
+**Note:** if `USR1` and `USR2` are not signaled, RUMIA won't clear screen once
+pause state is finished. Next shot will redraw each line separately, so even
+when RUMIA performs a shot, you still have all information still available
+on the screen, except the one for a computer currently being polled.
 
 ## Executing an arbitrary command
 
