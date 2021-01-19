@@ -182,7 +182,10 @@ SSH private key or computer's fancy name).
     one of them isn't found, then polling of this computer is skipped,
     and the corresponding message is displayed in the table.
 
-    * `ssh_password`: A root password for SSH session. Has an effect only if
+    * `ssh_user`: User name for SSH session. Has an effect only if `ssh_cmd`
+    is a symlink to `ssh_cmd.sshpass`.
+
+    * `ssh_password`: User password for SSH session. Has an effect only if
     `ssh_cmd` is a symlink to `ssh_cmd.sshpass`.
 
     * `vpngw_host`: A host to which `ssh` must connect to achieve access to the
@@ -240,7 +243,7 @@ link these files to it.
         located on `vpngw_host` in directory `vpngw_keydir`.
 
         * `../../templates.d/ssh_cmd.sshpass`: a simple SSH to remote computer
-        as root using `ssh_password` as SSH password. Obvioulsy it is
+        as `ssh_user` using `ssh_password` as SSH password. Obvioulsy it is
         absolutely insecure, avoid using this method by any measures. Note:
         `require` should contain "`sshpass`" for this, and `sshpass` utility
         should be installed on the computer where RUMIA is running.
