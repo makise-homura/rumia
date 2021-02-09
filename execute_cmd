@@ -93,15 +93,16 @@ do
         fi
         if [ -e $SCRIPTPATH/$SMARKER ]
         then
+            echo -ne "\n${MSG_CHECKINGMACH_0}${MACHINE}${MSG_CHECKINGMACH_1}"
             if $SCRIPTPATH/ping_cmd
             then
-                echo -e "\n${MSG_RUNNINGMACH_0}${MACHINE}${MSG_RUNNINGMACH_1}"
+                echo -e "\r${MSG_RUNNINGMACH_0}${MACHINE}${MSG_RUNNINGMACH_1}"
                 `$SCRIPTPATH/ssh_cmd -- "$@"`
             else
-                echo -e "\n${MSG_SLEEPINGMACH_0}${MACHINE}${MSG_SLEEPINGMACH_1}"
+                echo -e "\r${MSG_SLEEPINGMACH_0}${MACHINE}${MSG_SLEEPINGMACH_1}"
             fi
         else
-            echo -e "\n${MSG_SKIPPINGMACH_0}${MACHINE}${MSG_SKIPPINGMACH_1}"
+            echo -e "\r${MSG_SKIPPINGMACH_0}${MACHINE}${MSG_SKIPPINGMACH_1}"
         fi
     fi
 done
