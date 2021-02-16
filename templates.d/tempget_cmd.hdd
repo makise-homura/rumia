@@ -1,4 +1,4 @@
 #!/bin/sh
-[ "$1" == "0" ] && letter=a
-[ "$1" == "1" ] && letter=b
+[ "$1" = "0" ] && letter=a
+[ "$1" = "1" ] && letter=b
 `$SCRIPTPATH/ssh_cmd smartctl --all /dev/sd$letter` | grep ^194 | sed 's/ \+/ /g;s/\n//g' | cut -d' ' -f10

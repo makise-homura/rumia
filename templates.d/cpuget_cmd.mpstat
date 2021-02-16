@@ -1,16 +1,16 @@
 #!/bin/sh
 cmd=`$SCRIPTPATH/ssh_cmd mpstat -u 1 1`
 idle=`$cmd | tail -n1 | sed 's/.*[[:space:]]//;s/,/./'` 2>/dev/null
-used=`echo "scale=0; (100 - $idle) / 1" | bc` 2>/dev/null
+used=`/bin/echo "scale=0; (100 - $idle) / 1" | bc` 2>/dev/null
 case $used in
     [0-9])
-        echo -n "  $used % ";;
+        /bin/echo -n "  $used % ";;
     [0-7][0-9])
-        echo -ne " \e[36m$used %\e[0m ";;
+        /bin/echo -ne " \e[36m$used %\e[0m ";;
     [8-9][0-9])
-        echo -ne " \e[1m$used %\e[0m ";;
+        /bin/echo -ne " \e[1m$used %\e[0m ";;
     100)
-        echo -ne " \e[1m100%\e[0m ";;
+        /bin/echo -ne " \e[1m100%\e[0m ";;
     *)
-        echo -ne " \e[1;31m????\e[0m ";;
+        /bin/echo -ne " \e[1;31m????\e[0m ";;
 esac

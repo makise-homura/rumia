@@ -6,4 +6,4 @@ rawbatval=`$command`
 color="36"
 [ $rawbatval -le 50 ] && color="1;33"
 [ $rawbatval -le 20 ] && color="1;31"
-echo -ne " \e[${color}m${batval}\e[0m "
+/bin/echo -ne " \e[${color}m${batval}\e[0m "
