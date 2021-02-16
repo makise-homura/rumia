@@ -326,7 +326,7 @@ do
         if [ "$ENABLE_ONESHOT" = "yes" ]
         then
             echo
-            break
+            exit 0
         fi
         [ "$LOGFILE" ] && echo -e $log_str >> $LOGFILE
 
