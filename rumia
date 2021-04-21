@@ -167,6 +167,9 @@ do
             machinedir=`ls $COMPUTERS_D | grep -- "-$machine\$"`
             MACHINEDIRS="$MACHINEDIRS $machinedir"
         done
+        UPDATEDIRS="no"
+    else
+        UPDATEDIRS="yes"
     fi
 
     while true
@@ -182,7 +185,7 @@ do
         echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_CPU $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
         echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
         log_str="`date`"
-        [ -z "$MACHINEDIRS" ] && MACHINEDIRS="`ls $COMPUTERS_D`"
+        [ "$UPDATEDIRS" = "yes" ] && MACHINEDIRS="`ls $COMPUTERS_D`"
         for SCRIPTDIR in $MACHINEDIRS
         do
             SCRIPTPATH=$COMPUTERS_D/$SCRIPTDIR
