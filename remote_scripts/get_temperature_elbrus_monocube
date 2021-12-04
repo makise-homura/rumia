@@ -1,0 +1,17 @@
+#!/bin/sh
+
+for mon in /sys/class/hwmon/*
+do
+    [ -f ${mon}/device/name ] || continue
+    [ "`cat ${mon}/device/name`" = "lm95231" ] || continue
+    case $1 in
+        0) # CPU
+            echo "scale = 1; `cat ${mon}/device/temp2_input` / 1000" | bc; exit 0
+        ;;
+        1) # Ambient
+            echo "scale = 1; `cat ${mon}/device/temp1_input` / 1000" | bc; exit 0
+        ;;
+    esac
+done
+echo "99.9"
+exit 1
