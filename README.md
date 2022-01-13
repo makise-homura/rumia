@@ -53,6 +53,9 @@ when RUMIA is running: no stalled file handles will be left there.
 available languages are `en_US` and `ru_RU`. The corresponding
 `language.$RUMIA_LANG` file must exist in `$PREFIX`.
 
+* `NAME_LENGTH` should be a length of computer's name column. If not defined,
+not numerical, or less than 8, defaults to 8.
+
 * `MARKER` should be a name of a marker file that makes a computer visible
 to RUMIA. Usually this is `temp_enabled`. For further information, see below
 for a meaning of `temp_enabled` file.

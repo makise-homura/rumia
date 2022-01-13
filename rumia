@@ -140,6 +140,22 @@ do
         exit 16
     fi
 
+    WIDESP=""
+    WIDEDL=""
+    WIDESL=""
+    WIDEES=""
+    [ -z "$NAME_LENGTH" ] && NAME_LENGTH=8
+    echo $NAME_LENGTH | grep -q '^[0-9]\+$' || NAME_LENGTH=8
+    [ $NAME_LENGTH -lt 8 ] && NAME_LENGTH=8
+    if [ $NAME_LENGTH -gt 8 ]
+    then
+        W=`echo $NAME_LENGTH - 8 | bc`
+        WIDESP="`printf "%${W}s"`"
+        WIDEDL="`echo "$WIDESP" | sed 'y/ /═/'`"
+        WIDESL="`echo "$WIDESP" | sed 'y/ /─/'`"
+        WIDEES="\e[${W}C"
+    fi
+
     # Computer directory must/may be populated with:
     #   output scripts (print text value): uptime_cmd, cpuget_cmd, tempget_cmd, battery_cmd
     #   checker scripts (return code): ping_cmd (mandatory), gethdd_cmd
@@ -178,12 +194,12 @@ do
         tput rmam
         if [ "$ENABLE_ONESHOT" = "yes" ]
         then
-            echo "  ╔═ RUMIA v$RUMIA_VERSION ════════════════════════════════════════════════════════════════════════╗"
+            echo "  ╔═ RUMIA v$RUMIA_VERSION ${WIDEDL}════════════════════════════════════════════════════════════════════════╗"
         else
-            echo -e "  ╔═ RUMIA v$RUMIA_VERSION ══════════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
+            echo -e "  ╔═ RUMIA v$RUMIA_VERSION ${WIDEDL}══════════════════════════════[ \e[32m$MSG_UPDATE kill -USR1 $MYPID\e[0m ]═╗"
         fi
-        echo -e "  ║\e[1m  $MSG_HEADER_MACHINE $MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_CPU $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6  \e[0m║"
-        echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
+        echo -e "  ║\e[1m  $MSG_HEADER_MACHINE ${WIDESP}$MSG_HEADER_STATUS $MSG_HEADER_UPTIME $MSG_HEADER_DISK $MSG_HEADER_CPU  $MSG_HEADER_T0  $MSG_HEADER_T1  $MSG_HEADER_T2  $MSG_HEADER_T3  $MSG_HEADER_T4  $MSG_HEADER_T5  $MSG_HEADER_T6 \e[0m║"
+        echo "  ╟──${WIDESL}───────────────────────────────────────────────────────────────────────────────────╢"
         log_str="`date`"
         [ "$UPDATEDIRS" = "yes" ] && MACHINEDIRS="`ls $COMPUTERS_D`"
         for SCRIPTDIR in $MACHINEDIRS
@@ -194,7 +210,7 @@ do
             then
                 if [ -z "$MACHINE" ]
                 then
-                    echo "  ╟─────────────────────────────────────────────────────────────────────────────────────╢"
+                    echo "  ╟──${WIDESL}───────────────────────────────────────────────────────────────────────────────────╢"
                 else
                     export MACHINE
                     export SCRIPTPATH
@@ -217,7 +233,7 @@ do
                             machine_crit=`cat $SCRIPTPATH/temp_crit`
                         fi
                     fi
-                    echo -ne "                                                                                        ║\r  ║  $machine_name\r\e[14C"
+                    echo -ne " ${WIDESP}                                                                                       ║\r  ║  $machine_name\r\e[14C${WIDEES}"
 
                     # Check if we have all required tools
                     CONDITIONS_MET="yes"
@@ -251,7 +267,7 @@ do
                             struptime=`$SCRIPTPATH/uptime_cmd 2>/dev/null | sed "$MSG_UPTIME_REGEXP"`
                             [ -z "$struptime" ] && struptime="\e[1;31m$MSG_UNKNOWN\e[0m"
                         fi
-                        echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C"
+                        echo -ne "\e[1;32m$MSG_ALIVE\e[0m  $struptime\r\e[35C${WIDEES}"
 
                         # Check HDD
                         if [ -x $SCRIPTPATH/gethdd_cmd ]
@@ -324,7 +340,7 @@ do
                 fi
             fi
         done
-        echo -ne "  ╚═════════════════════════════════════════════════════════════════════════════════════╝\r"
+        echo -ne "  ╚══${WIDEDL}═══════════════════════════════════════════════════════════════════════════════════╝\r"
         tput smam
         if [ "$ENABLE_ONESHOT" = "yes" ]
         then
@@ -348,6 +364,6 @@ do
             SEC=`echo $SEC - 1 | bc`
         done
         [ "$RELOAD" = "yes" ] && break
-        [ "$RESTART" = "yes" ] || echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_UPDATING} ]══════════════\r" # it could be enough of "═" if lengths of MSG_REMAINING, DELAY, MSG_SECONDS, and MSG_UPDATING are sane.
+        [ "$RESTART" = "yes" ] || echo -ne "  ╚═[ ${MSG_LASTSHOT}${SHOTDATE}${MSG_UPDATING} ]══${WIDEDL}════════════\r" # it could be enough of "═" if lengths of MSG_REMAINING, DELAY, MSG_SECONDS, and MSG_UPDATING are sane.
     done
 done

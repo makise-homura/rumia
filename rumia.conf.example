@@ -1,5 +1,6 @@
 PREFIX=${PREFIX:-/opt/rumia}
 COMPUTERS_D=${COMPUTERS_D:-$PREFIX/computers.d}
+NAME_LENGTH=8
 LOGFILE=${LOGFILE:-$PREFIX/temperatures.log}
 RUMIA_LANG=${RUMIA_LANG:-ru_RU}
 MARKER=${MARKER:-temp_enabled}
