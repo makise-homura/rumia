@@ -324,6 +324,9 @@ link these files to it.
         * `../../templates.d/gethdd_cmd.nvme`: Do the same, but for
         `/dev/nvme0n1`.
 
+        * `../../templates.d/gethdd_cmd.rootfs`: Do the same, but for
+        a device containing partition that is mounted as the rootfs.
+
     * `battery_cmd`: Print a battery level of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
     trailing ones are spaces, and should not produce a newline after that (so

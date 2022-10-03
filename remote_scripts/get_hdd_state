@@ -9,7 +9,12 @@
 
 # Drive block device is the first parameter of this script.
 
-DEVICE="$1"
+if [ -z "$1" ]
+then
+    DEVICE=/dev/$(echo $(basename $(readlink /dev/block/$(mountpoint -d /))) | sed 's/p\?[0-9]*$//')
+else
+    DEVICE="$1"
+fi
 LAST_SECTOR=100000000 # Test until 51.2 GB
 
 if [ ! -b "$DEVICE" ]
