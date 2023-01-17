@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Fill array with strings:
+# * "hwmon_name/sensor_label" to get tempX_input value where tempX_label is sensor_label, from hwmon where name is hwmon_name
+# * "hwmon_name/@N" to get tempN_input value from hwmon where name is hwmon_name
+# * "hwmon_name/@max" to get maximum value of all temp*_input entries from hwmon where name is hwmon_name
+SENSORS=("k10temp/Tccd1" "k10temp/Tctl" "acpitz/@1" "gigabyte_wmi/@max" "nvme/Composite" "radeon/@1")
+
+if [ "$1" -lt "${#SENSORS[@]}" ]
+then
+    s_name=${SENSORS[$1]%%/*}
+    s_label=${SENSORS[$1]##*/}
+    for mon in /sys/class/hwmon/*
+    do
+        [ -f ${mon}/name ] || continue
+        [ "`cat ${mon}/name`" = "${s_name}" ] || continue
+        if [ "${s_label}" = "@max" ]
+        then
+            max=0
+            for input in ${mon}/temp*_input
+            do
+                cur=`cat ${input}`
+                [ ${cur} -gt ${max} ] && max=${cur}
+            done
+            echo "scale = 1; ${max} / 1000" | bc
+            exit 0
+        elif [ "${s_label:0:1}" = "@" ]
+        then
+            echo "scale = 1; `cat ${mon}/temp${s_label:1}_input` / 1000" | bc
+            exit 0
+        else
+            for label in ${mon}/temp*_label
+            do
+                [ "`cat ${label}`" = "${s_label}" ] || continue
+                echo "scale = 1; `cat ${label//label/input}` / 1000" | bc
+                exit 0
+            done
+        fi
+    done
+fi
+echo "99.9"
+exit 1

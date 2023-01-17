@@ -382,9 +382,11 @@ a trailing newline.
 
 For RUMIA to be able to check CPU temperatures, you should copy one of the
 `remote_scripts/get_temperature_*` scripts to the remote computer as
-`get_temperature` into any directory from `$PATH`. Note: if you modified
-`ssh_cmd` so you log in as user other than root, you might need to add
-that user to `sudoers` file. If none of these scripts are useful for you,
+`get_temperature` into any directory from `$PATH`. In most cases, best
+choice is `get_temperature_configurable`, edited according to structure of
+`hwmon` sysfs facility (note the comments inside this file). Note: if you
+modified `ssh_cmd` so you log in as user other than root, you might need to
+add that user to `sudoers` file. If none of these scripts are useful for you,
 you may write your own based on supplied scripts as examples. It should read
 the value of temperature sensor with number specified in `$1` (starting from 0)
 and print it as a fixed point value from `0.0` to `99.9`, or print `99.9`
