@@ -297,6 +297,11 @@ link these files to it.
         made by Microsoft, since Microsoft's one doesn't work if being run
         by unprivileged user.
 
+        * `../../templates.d/uptime_cmd.procfs`: using data from `/proc/uptime`
+        file obtained through an SSH session to remote computer (using
+        `ssh_cmd`'s output). Useful if you have BASH with enabled procfs
+        on Windows, but don't have any suitable `uptime.exe`.
+
     * `cpuget_cmd`: Print a CPU utilization of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
     trailing ones are spaces, and should not produce a newline after that (so
@@ -305,6 +310,15 @@ link these files to it.
 
         * `../../templates.d/cpuget_cmd.mpstat`: calling `mpstat` command
         through an SSH session to remote computer (using `ssh_cmd`'s output).
+        Output will be colorized: 0..9% is light gray, 10..79% is cyan,
+        80..100% is bright white.
+
+        * `../../templates.d/cpuget_cmd.csvlog`: analyzing files specified
+        in `logfile` through an SSH session to remote computer (using
+        `ssh_cmd`'s output). `logfile` may contain wildcards, like
+        `/c/PerfLogs/cpulog_*.csv`, but may not contain spaces. Useful if you
+        have Windows and use `logman` to dump CPU load to specified files
+        in format like `"09/22/2023 23:35:39.309","69.829614488284107665"`.
         Output will be colorized: 0..9% is light gray, 10..79% is cyan,
         80..100% is bright white.
 
@@ -323,6 +337,15 @@ link these files to it.
         parameter is 0) or `/dev/sdb` (if first parameter is 1) for its
         temperature using `smartctl`. Note: `smartctl` utility should be
         installed on the remote computer.
+
+        * `../../templates.d/tempget_cmd.csvlog`: analyzing a file specified
+        in `templogfile` through an SSH session to remote computer (using
+        `ssh_cmd`'s output). `templogfile` may not contain wildcards and
+        spaces, and should look like `/c/PerfLogs/GPU-Z_Sensor_Log.txt`.
+        First parameter is the index of temperature column in that file.
+        Useful if you have Windows and use GPU-Z to dump GPU/CPU temperatures
+        to a file in CSV-like (but with indents and without quotes) format like
+        `2023-09-22 23:36:08 ,               54.0   ,               80.3   ,`.
 
     * `gethdd_cmd`: Check a consistency of remote computer's disk. Should print
     nothing, and return 0 on success and non-null on failure. Could be

@@ -1,0 +1,16 @@
+#!/bin/sh
+logfile="`cat $SCRIPTPATH/templogfile`"
+cmd="`$SCRIPTPATH/ssh_cmd tail -n1 $logfile`" 2>/dev/null
+res="`$cmd`"
+if [ $? -eq 0 ]
+then
+    stamp="`echo $res | cut -d, -f1`"
+    now=`date +%s`
+    got=`date -d "$stamp" +%s`
+    if [ $(($now - $got)) -lt 1200 ]
+    then
+        echo $res | cut -d, -f$(($1 + 2)) | sed 's/[[:space:]]//g'
+        exit 0
+    fi
+fi
+echo 99.9

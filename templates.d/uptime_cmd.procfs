@@ -1,0 +1,15 @@
+#!/bin/sh
+C=`$SCRIPTPATH/ssh_cmd cut -d. -f1 /proc/uptime`
+U=`$C`
+if [ $U -lt 60 ]
+then
+    echo up 0 min
+elif [ $U -lt 3600 ]
+then
+    echo up $(($U/60%60)) min
+elif [ $U -lt 84600 ]
+then
+    echo up $(($U/3600%24)):`printf "%02d" $(($U/60%60))`
+else
+    echo up $(($U/84600)) days, $(($U/3600%24)):`printf "%02d" $(($U/60%60))`
+fi
