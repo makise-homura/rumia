@@ -1,2 +1,3 @@
 #!/bin/sh
-echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh -o PreferredAuthentications=password $SSH_OPTS -l `cat $SCRIPTPATH/ssh_user` $MACHINE -C $@"
+[ -f $SCRIPTPATH/ssh_user ] && SSHUSER=`cat $SCRIPTPATH/ssh_user` || SSHUSER=root
+echo "sshpass -p `cat $SCRIPTPATH/ssh_password` ssh -o PreferredAuthentications=password $SSH_OPTS -l $SSHUSER $MACHINE -C $@"

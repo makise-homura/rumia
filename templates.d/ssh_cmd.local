@@ -1,3 +1,4 @@
 #!/bin/sh
 [ -e $SCRIPTPATH/key ] && key="-i $SCRIPTPATH/key" || key=""
-echo "ssh $SSH_OPTS $key root@$MACHINE -C $@"
+[ -f $SCRIPTPATH/user ] && USER=`cat $SCRIPTPATH/user` || USER=root
+echo "ssh $SSH_OPTS $key $USER@$MACHINE -C $@"

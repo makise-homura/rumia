@@ -227,29 +227,36 @@ link these files to it.
     Should never fail on properly configured RUMIA. Could be symlinked to:
 
         * `../../templates.d/ssh_cmd.local`: a simple SSH to remote computer
-        as root using `key` as a private key.
+        as user `user` (if not exist, defaults to `root`), using `key` as a
+        private key.
 
         * `../../templates.d/ssh_cmd.gateway`: SSH to remote computer using
         a specific host, port and user, that are specified in `vpngw_host`,
-        `vpngw_port`, and `vpngw_user`, correspondingly. `key` is stll a
-        private key.
+        `vpngw_port`, and `vpngw_user` (if not exist, defaults to `root`),
+        correspondingly. `key` is stll a private key.
 
         * `../../templates.d/ssh_cmd.recursive`: SSH through other SSH tunnel.
-        First we connect to `vpngw_host` using `key`, and then, after we
-        connected, we proceed to connect to specified hostname using
-        `/root/keys/$MACHINE.pk` key, which is located on `vpngw_host`.
+        First we connect to `vpngw_host` using `key` as user `vpngw_user`
+        (if not exist, defaults to `root`), and then, after we connected,
+        we proceed to connect to specified hostname as user `user` (if not
+        exist, defaults to `root`), using `$MACHINE.pk` key, which
+        is located on `vpngw_host` in directory `vpngw_keydir` (if not exist,
+        defaults to `/root/keys`).
 
         * `../../templates.d/ssh_cmd.gateway+recursive`: a combination of above
-        two methods. First we connect to `vpngw_host` port `vpngw_port` using
-        `key` as user `vpngw_user`, and then, after we connected, we proceed
-        to connect to specified hostname using `$MACHINE.pk` key, which is
-        located on `vpngw_host` in directory `vpngw_keydir`.
+        two methods. First we connect to `vpngw_host` port `vpngw_port` as user
+        `vpngw_user` (if not exist, defaults to `root`), using `key`, and then,
+        after we connected, we proceed to connect to specified hostname as user
+        `user` (if not exist, defaults to `root`), using `$MACHINE.pk` key,
+        which is located on `vpngw_host` in directory `vpngw_keydir` (if not
+        exist, defaults to `/root/keys`).
 
         * `../../templates.d/ssh_cmd.sshpass`: a simple SSH to remote computer
-        as `ssh_user` using `ssh_password` as SSH password. Obvioulsy it is
-        absolutely insecure, avoid using this method by any measures. Note:
-        `require` should contain "`sshpass`" for this, and `sshpass` utility
-        should be installed on the computer where RUMIA is running.
+        as `ssh_user` (if not exist, defaults to `root`) using `ssh_password`
+        as SSH password. Obvioulsy it is absolutely insecure, avoid using this
+        method by any measures. Note: `require` should contain "`sshpass`" for
+        this, and `sshpass` utility should be installed on the computer where
+        RUMIA is running.
 
     * `ping_cmd`: Check an availability of remote computer. If machine is
     unavailable, then no further polling is performed. Should print nothing,
@@ -259,19 +266,23 @@ link these files to it.
         computer.
 
         * `../../templates.d/ping_cmd.by_ssh`: "pinging" a machine by opening
-        an SSH session to it (using `ssh_cmd`'s output). Useful if you connect
-        to it through a gateway (using `ssh_cmd.gateway` script).
+        an SSH session to it (using `ssh_cmd`'s output) and checking if `sudo`
+        call into `sudo_user` (if not exist, defaults to `root`) is successful.
+        Useful if you connect to it through a gateway (using `ssh_cmd.gateway`
+        script).
 
         * `../../templates.d/ping_cmd.recursive`: a ping through SSH tunnel.
-        First we connect to `vpngw_host` using `key`, and then, after we
-        connected, we just ping specified hostname. Useful if you connect to it
+        First we connect to `vpngw_host` using `key` as user `vpngw_user`
+        (if not exist, defaults to `root`), and then, after we connected,
+        we just ping specified hostname. Useful if you connect to it
         recursively (using `ssh_cmd.recursive` script).
 
         * `../../templates.d/ping_cmd.gateway+recursive`: a ping through SSH
         tunnel via gateway. First we connect to `vpngw_host` port `vpngw_port`
-        using `key` as user `vpngw_user`, and then, after we connected, we just
-        ping specified hostname. Useful if you connect to it recursively
-        through gateway (using `ssh_cmd.gateway+recursive` script).
+        using `key` as user `vpngw_user` (if not exist, defaults to `root`),
+        and then, after we connected, we just ping specified hostname. Useful
+        if you connect to it recursively through gateway (using
+        `ssh_cmd.gateway+recursive` script).
 
     * `uptime_cmd`: Print an uptime of remote computer. Return value does not
     matter. Could be symlinked to:

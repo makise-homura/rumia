@@ -1,2 +1,3 @@
 #!/bin/sh
-echo "ssh $SSH_OPTS -l `cat $SCRIPTPATH/vpngw_user` -i $SCRIPTPATH/key -p `cat $SCRIPTPATH/vpngw_port` `cat $SCRIPTPATH/vpngw_host` -C $@"
+[ -f $SCRIPTPATH/vpngw_user ] && GWUSER=`cat $SCRIPTPATH/vpngw_user` || GWUSER=root
+echo "ssh $SSH_OPTS -l $GWUSER -i $SCRIPTPATH/key -p `cat $SCRIPTPATH/vpngw_port` `cat $SCRIPTPATH/vpngw_host` -C $@"

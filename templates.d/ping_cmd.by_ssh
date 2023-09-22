@@ -1,2 +1,3 @@
 #!/bin/sh
-`$SCRIPTPATH/ssh_cmd sudo true` 1>/dev/null 2>/dev/null
+[ -f $SCRIPTPATH/user ] && USER=`cat $SCRIPTPATH/user` || USER=root
+`$SCRIPTPATH/ssh_cmd sudo -u $USER true` 1>/dev/null 2>/dev/null
