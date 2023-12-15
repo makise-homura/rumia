@@ -1,0 +1,48 @@
+#!/bin/bash
+
+f_cputemp()
+{
+    got="`echo $res | cut -d' ' -f1`"
+    now=$((`date +"%H * 3600 + %M * 60 + %S"`))
+    if [ $(($now - $got)) -lt 1200 ]
+    then
+        echo $res | cut -d' ' -f2 | sed 's/[[:space:]]//g;s/,/./g'
+        exit 0
+    fi
+}
+
+f_gputemp()
+{
+    stamp="`echo $res | cut -d, -f1`"
+    now=`date +%s`
+    got=`date -d "$stamp" +%s`
+    if [ $(($now - $got)) -lt 1200 ]
+    then
+        echo $res | cut -d, -f2 | sed 's/[[:space:]]//g'
+        exit 0
+    fi
+}
+
+case "$1" in
+    "0")
+        logfile="`cat $SCRIPTPATH/cputempfile`"
+        func=f_cputemp
+        ;;
+    "1")
+        logfile="`cat $SCRIPTPATH/gputempfile`"
+        func=f_gputemp
+        ;;
+    "*")
+        echo 99.9
+        exit 1
+        ;;
+esac
+
+dnm=`dirname "$logfile"`
+fnm=`basename "$logfile"`
+str="find \"$dnm\" -maxdepth 1 -name \"$fnm\" -mmin -10 -print0 \| xargs -0 tail -n1"
+cmd="`$SCRIPTPATH/ssh_cmd "$str"`" 2>/dev/null
+res="`bash -c \"$cmd | tail -n1\"`"
+[ $? -eq 0 -a "$res" ] && $func
+echo 99.9
+exit 1

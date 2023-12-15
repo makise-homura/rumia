@@ -338,7 +338,7 @@ link these files to it.
         temperature using `smartctl`. Note: `smartctl` utility should be
         installed on the remote computer.
 
-        * `../../templates.d/tempget_cmd.csvlog`: analyzing a file specified
+        * `../../templates.d/tempget_cmd.csvlog`: Analyze a file specified
         in `templogfile` through an SSH session to remote computer (using
         `ssh_cmd`'s output). `templogfile` may not contain wildcards and
         spaces, and should look like `/c/PerfLogs/GPU-Z_Sensor_Log.txt`.
@@ -346,6 +346,21 @@ link these files to it.
         Useful if you have Windows and use GPU-Z to dump GPU/CPU temperatures
         to a file in CSV-like (but with indents and without quotes) format like
         `2023-09-22 23:36:08 ,               54.0   ,               80.3   ,`.
+
+        * `../../templates.d/tempget_cmd.difflog`: Analyze two files specified
+        in `cputempfile` and `gputempfile` correspondingly, through an SSH
+        session to remote computer (using `ssh_cmd`'s output). `*tempfile` may
+        contain wildcards (in that case the first file found not older than 10
+        min by modification time is analyzed); if it contains spaces, `(` or
+        `)`, these characters must be escaped. E.g, it may look like
+        `/c/Program\ Files\ \(x86\)/SpeedFan/SFLog*.csv`. If first parameter
+        is 0, `cputempfile` is analyzed, and format is treated as SpeedFan log
+        format: number of seconds since midnight, and then temperature
+        in format like `12.3` or `45,6`. If first parameter is 1, `gputempfile`
+        is analyzed, and its format treated as with `tempget_cmd.csvlog`, with
+        the index of temperature column being 0. Useful if you have Windows
+        and use SpeedFan to dump CPU temperature, and GPU-Z to dump GPU
+        temperature to these two files.
 
     * `gethdd_cmd`: Check a consistency of remote computer's disk. Should print
     nothing, and return 0 on success and non-null on failure. Could be
