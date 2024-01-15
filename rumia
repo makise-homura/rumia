@@ -272,9 +272,31 @@ do
                         # Check HDD
                         if [ -x $SCRIPTPATH/gethdd_cmd ]
                         then
-                            if $SCRIPTPATH/gethdd_cmd 2>/dev/null
+                            strhdd=`$SCRIPTPATH/gethdd_cmd 2>/dev/null`
+                            hddrv=$?
+                            if [ $hddrv -ne 0 ]
+                            then
+                                echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
+                            elif [ -z "$strhdd" -o "$strhdd" = "OK" ]
                             then
                                 echo -ne "\e[1;32m$MSG_DISK_OK\e[0m "
+                            elif echo "$strhdd" | grep -q '^[0-9]\{1,3\}$'
+                            then
+                                if [ "$strhdd" -le 9 ]
+                                then
+                                    echo -ne "  \e[0m$strhdd% "
+                                elif [ "$strhdd" -le 70 ]
+                                then
+                                    echo -ne " \e[0m$strhdd% "
+                                elif [ "$strhdd" -le 90 ]
+                                then
+                                    echo -ne " \e[1;33m$strhdd%\e[0m "
+                                elif [ "$strhdd" -le 99 ]
+                                then
+                                    echo -ne " \e[1;31m$strhdd%\e[0m "
+                                else
+                                    echo -ne "\e[1;31m100%\e[0m "
+                                fi
                             else
                                 echo -ne "\e[1;41;33m$MSG_DISK_DEAD\e[0m "
                             fi

@@ -60,7 +60,12 @@ FIRST_SECTOR=1
 
 if md5_different 1 $MD5_MBR
 then
-    echo "OK"
+    if [ -z "$1" ]
+    then
+        stat -c "100 - %f * 100 / %b" -f / | bc
+    else
+        echo "OK"
+    fi
     exit 0
 fi
 

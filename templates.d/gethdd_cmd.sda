@@ -1,2 +1,2 @@
 #!/bin/sh
-`$SCRIPTPATH/ssh_cmd sudo get_hdd_state /dev/sda` 1>/dev/null 2>/dev/null
+`$SCRIPTPATH/ssh_cmd sudo get_hdd_state /dev/sda` 2>/dev/null

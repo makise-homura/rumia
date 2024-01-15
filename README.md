@@ -362,19 +362,27 @@ link these files to it.
         and use SpeedFan to dump CPU temperature, and GPU-Z to dump GPU
         temperature to these two files.
 
-    * `gethdd_cmd`: Check a consistency of remote computer's disk. Should print
-    nothing, and return 0 on success and non-null on failure. Could be
-    symlinked to:
+    * `gethdd_cmd`: Check a consistency of remote computer's disk. Should
+    return 0 on success and non-null on failure. On success, should print
+    either nothing, `OK`, or percentage of used space on disk (without the
+    percent sign). In the latter case, rumia will dispaly it and colorize
+    the output: 0..70% is light gray, 71..90% is yellow, 91..100% is bright
+    red.
+
+    Could be symlinked to:
 
         * `../../templates.d/gethdd_cmd.sda`: Check remote computer's
         `/dev/sda` by SSH (using `ssh_cmd`'s output and calling
-        `get_hdd_state`).
+        `get_hdd_state`). Deprecated, not recommended to use. Doesn't show
+        used space.
 
         * `../../templates.d/gethdd_cmd.nvme`: Do the same, but for
-        `/dev/nvme0n1`.
+        `/dev/nvme0n1`. Deprecated, not recommended to use. Doesn't show
+        used space.
 
         * `../../templates.d/gethdd_cmd.rootfs`: Do the same, but for
         a device containing partition that is mounted as the rootfs.
+        This is the only script that shows used space on disk.
 
     * `battery_cmd`: Print a battery level of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
@@ -417,7 +425,8 @@ For RUMIA to be able to check HDD state, you should copy
 `remote_scripts/get_hdd_state` to the remote computer as `get_hdd_state`
 into any directory from `$PATH`. Note: if you modified `ssh_cmd` so you
 log in as user other than root, you might need to add that user to `sudoers`
-file.
+file. Also, if you use `gethdd_cmd.rootfs` command file, be sure that `stat`
+and `bc` commands are available on remote computer.
 
 For RUMIA to be able to check battery value, you should copy one of the
 `remote_scripts/get_battery_*` scripts to the remote computer as `get_battery`
