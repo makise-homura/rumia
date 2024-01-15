@@ -1,5 +1,6 @@
 #!/bin/sh
+[ -e $SCRIPTPATH/key ] && KEYPARM="-i $SCRIPTPATH/key" || KEYPARM=""
 [ -f $SCRIPTPATH/vpngw_user ] && GWUSER=`cat $SCRIPTPATH/vpngw_user` || GWUSER=root
 [ -f $SCRIPTPATH/vpngw_keydir ] && KEYDIR="`cat $SCRIPTPATH/vpngw_keydir`" || KEYDIR="/root/keys"
 [ -f $SCRIPTPATH/user ] && USER=`cat $SCRIPTPATH/user` || USER=root
-echo "ssh $SSH_OPTS -l $GWUSER -i $SCRIPTPATH/key `cat $SCRIPTPATH/vpngw_host` -C ssh $SSH_OPTS -l $USER -i "$KEYDIR/$MACHINE.pk" $MACHINE -C $@"
+echo "ssh $SSH_OPTS -l $GWUSER $KEYPARM `cat $SCRIPTPATH/vpngw_host` ssh $SSH_OPTS -l $USER -i $KEYDIR/$MACHINE.pk $MACHINE '$@'"

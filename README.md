@@ -236,10 +236,10 @@ link these files to it.
         correspondingly. `key` is stll a private key.
 
         * `../../templates.d/ssh_cmd.recursive`: SSH through other SSH tunnel.
-        First we connect to `vpngw_host` using `key` as user `vpngw_user`
-        (if not exist, defaults to `root`), and then, after we connected,
-        we proceed to connect to specified hostname as user `user` (if not
-        exist, defaults to `root`), using `$MACHINE.pk` key, which
+        First we connect to `vpngw_host` using `key` (if exists) as user
+        `vpngw_user` (if not exist, defaults to `root`), and then, after we
+        connected, we proceed to connect to specified hostname as user `user`
+        (if not exist, defaults to `root`), using `$MACHINE.pk` key, which
         is located on `vpngw_host` in directory `vpngw_keydir` (if not exist,
         defaults to `/root/keys`).
 
