@@ -384,6 +384,12 @@ link these files to it.
         a device containing partition that is mounted as the rootfs.
         This is the only script that shows used space on disk.
 
+        * `../../templates.d/gethdd_cmd.mingw`: Don't check remote computer's
+        disk, just show used space on it. You could use this script with
+        Windows remote machines that have ssh access to them enabled and
+        mingw-like bash is running there. Doesn't require `get_hdd_state`
+        to be uploaded to remote machine.
+
     * `battery_cmd`: Print a battery level of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
     trailing ones are spaces, and should not produce a newline after that (so
@@ -421,12 +427,13 @@ For RUMIA to be able to monitor CPU load of remote computer, it should have
 `mpstat` command (in most Debian and Red Hat based OS it is contained within
 the `sysstat` package).
 
-For RUMIA to be able to check HDD state, you should copy
-`remote_scripts/get_hdd_state` to the remote computer as `get_hdd_state`
-into any directory from `$PATH`. Note: if you modified `ssh_cmd` so you
-log in as user other than root, you might need to add that user to `sudoers`
-file. Also, if you use `gethdd_cmd.rootfs` command file, be sure that `stat`
-and `bc` commands are available on remote computer.
+For RUMIA to be able to check HDD state, and unless you're using
+`gethdd_cmd.mingw` for it, you should copy `remote_scripts/get_hdd_state`
+to the remote computer as `get_hdd_state` into any directory from `$PATH`.
+Note: if you modified `ssh_cmd` so you log in as user other than root,
+you might need to add that user to `sudoers` file. Also, if you're using
+`gethdd_cmd.rootfs` command file, be sure that `stat` and `bc` commands
+are available on remote computer.
 
 For RUMIA to be able to check battery value, you should copy one of the
 `remote_scripts/get_battery_*` scripts to the remote computer as `get_battery`

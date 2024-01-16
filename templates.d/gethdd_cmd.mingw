@@ -1,0 +1,2 @@
+#!/bin/sh
+P=`$SCRIPTPATH/ssh_cmd stat -c \"100 - %f x 100 / %b\" -f /` && U="`$P 2>/dev/null`" && echo "$U" | tr 'x' '*' | bc
