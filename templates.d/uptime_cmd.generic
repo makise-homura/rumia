@@ -1,2 +1,14 @@
 #!/bin/sh
-`$SCRIPTPATH/ssh_cmd uptime`
+CMD=`$SCRIPTPATH/ssh_cmd uptime`
+UPTIME=`$CMD`
+CMD=`$SCRIPTPATH/ssh_cmd date +%s`
+RTIME=`$CMD`
+LTIME=`date +%s`
+if [ "$RTIME" -a "$LTIME" ]
+then
+    DTIME=$(($RTIME - $LTIME))
+    [ $DTIME -le 10 -a $DTIME -ge -10 ] && COL="0" || COL="1;31"
+else
+    COL="1;33"
+fi
+echo "\e[${COL}m${UPTIME}\e[0m"

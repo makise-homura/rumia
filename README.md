@@ -289,18 +289,25 @@ link these files to it.
 
         * `../../templates.d/uptime_cmd.generic`: calling GNU `uptime` command
         through an SSH session to remote computer (using `ssh_cmd`'s output).
+        Also checks the correctness of remote clock; output of the command
+        is colorized according to it: light gray if OK, yellow if clock skew is
+        undetermined, red if it is more than 10 seconds.
 
         * `../../templates.d/uptime_cmd.windows`: calling Windows `uptime.exe`
         command through an SSH session to remote computer (using `ssh_cmd`'s
         output). You may download the corresponding `uptime.exe` binary
         [here](http://barnyard.syr.edu/~vefatica/#UPTIME). It is not the one
         made by Microsoft, since Microsoft's one doesn't work if being run
-        by unprivileged user.
+        by unprivileged user. Does not check the correctness of remote clock,
+        output is uncolorized.
 
         * `../../templates.d/uptime_cmd.procfs`: using data from `/proc/uptime`
         file obtained through an SSH session to remote computer (using
         `ssh_cmd`'s output). Useful if you have BASH with enabled procfs
-        on Windows, but don't have any suitable `uptime.exe`.
+        on Windows, but don't have any suitable `uptime.exe`. Also checks
+        the correctness of remote clock; output of the command is colorized
+        according to it: light gray if OK, yellow if clock skew is
+        undetermined, red if it is more than 10 seconds.
 
     * `cpuget_cmd`: Print a CPU utilization of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
