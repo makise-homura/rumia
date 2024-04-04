@@ -1,2 +1,16 @@
 #!/bin/sh
-P=`$SCRIPTPATH/ssh_cmd stat -c \"100 - %f x 100 / %b\" -f /` && U="`$P 2>/dev/null`" && echo "$U" | tr 'x' '*' | bc
+[ -f $SCRIPTPATH/watchfs ] && FS_LIST="`cat $SCRIPTPATH/watchfs`" || FS_LIST="/"
+[ -z "$FS_LIST" ] && U=100 || U=0
+for FS in $FS_LIST
+do
+    P=`$SCRIPTPATH/ssh_cmd stat -c \"100 - %f x 100 / %b\" -f $FS`
+    LU="`$P 2>/dev/null`"
+    if [ $? -ne 0 ]
+    then
+        echo 100
+        exit 1
+    fi
+    FU=`echo "$LU" | tr 'x' '*' | bc`
+    [ "$FU" -gt "$U" ] && U="$FU"
+done
+echo "$U"

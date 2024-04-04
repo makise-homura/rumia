@@ -1,2 +1,3 @@
 #!/bin/sh
-`$SCRIPTPATH/ssh_cmd sudo get_hdd_state` 2>/dev/null
+[ -f $SCRIPTPATH/watchfs ] && FS="-fs `cat $SCRIPTPATH/watchfs`" || FS=""
+`$SCRIPTPATH/ssh_cmd sudo get_hdd_state $FS` 2>/dev/null

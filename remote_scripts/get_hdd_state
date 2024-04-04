@@ -9,7 +9,7 @@
 
 # Drive block device is the first parameter of this script.
 
-if [ -z "$1" ]
+if [ -z "$1" -o "$1" = "-fs" ]
 then
     DEVICE=/dev/$(echo $(basename $(readlink /dev/block/$(mountpoint -d /))) | sed 's/p\?[0-9]*$//')
 else
@@ -60,7 +60,22 @@ FIRST_SECTOR=1
 
 if md5_different 1 $MD5_MBR
 then
-    if [ -z "$1" ]
+    if [ "$1" = "-fs" ]
+    then
+        if [ -z "$2" ]
+        then
+            echo "100"
+        else
+            USED=0
+            while [ "$2" ]
+            do
+                DUSED=`stat -c "100 - %f * 100 / %b" -f $2 | bc`
+                [ $DUSED -gt $USED ] && USED=$DUSED
+                shift
+            done
+            echo $USED
+        fi
+    elif [ -z "$1" ]
     then
         stat -c "100 - %f * 100 / %b" -f / | bc
     else

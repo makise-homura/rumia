@@ -372,7 +372,7 @@ link these files to it.
     * `gethdd_cmd`: Check a consistency of remote computer's disk. Should
     return 0 on success and non-null on failure. On success, should print
     either nothing, `OK`, or percentage of used space on disk (without the
-    percent sign). In the latter case, rumia will dispaly it and colorize
+    percent sign). In the latter case, rumia will display it and colorize
     the output: 0..70% is light gray, 71..90% is yellow, 91..100% is bright
     red.
 
@@ -389,13 +389,19 @@ link these files to it.
 
         * `../../templates.d/gethdd_cmd.rootfs`: Do the same, but for
         a device containing partition that is mounted as the rootfs.
-        This is the only script that shows used space on disk.
+        This is the only script that checks consistency of disk *and* shows
+        used space. If `watchfs` file does not exist, it shows user space
+        on rootfs; otherwise it checks all filesystems from there and displays
+        the one with most used percentage. Empty `watchfs` is considered
+        an error, it is displayed as 100% being used.
 
         * `../../templates.d/gethdd_cmd.mingw`: Don't check remote computer's
         disk, just show used space on it. You could use this script with
         Windows remote machines that have ssh access to them enabled and
         mingw-like bash is running there. Doesn't require `get_hdd_state`
-        to be uploaded to remote machine.
+        to be uploaded to remote machine. The `watchfs` file is used the same
+        way as with `gethdd_cmd.rootfs` (note that typical mingw filesystem
+        names usually are `/c`, `/d`, etc. for drives like `C:`, `D:`, etc.)
 
     * `battery_cmd`: Print a battery level of remote computer. Return value
     does not matter. Should print exactly 6 characters, of which leading and
