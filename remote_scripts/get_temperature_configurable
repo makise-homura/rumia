@@ -4,16 +4,28 @@
 # * "hwmon_name/sensor_label" to get tempX_input value where tempX_label is sensor_label, from hwmon where name is hwmon_name
 # * "hwmon_name/@N" to get tempN_input value from hwmon where name is hwmon_name
 # * "hwmon_name/@max" to get maximum value of all temp*_input entries from hwmon where name is hwmon_name
-SENSORS=("k10temp/Tccd1" "k10temp/Tctl" "acpitz/@1" "gigabyte_wmi/@max" "nvme/Composite" "radeon/@1")
+# * Note: hwmon_name may end up with @N to skip first N entries of same name, e.g. k10temp@0 will use first found, k10temp@1 will use second one, etc.
+SENSORS=("k10temp@0/Tctl" "k10temp@1/Tctl" "acpitz/@1" "gigabyte_wmi/@max" "nvme/Composite" "radeon/@1")
 
 if [ "$1" -lt "${#SENSORS[@]}" ]
 then
     s_name=${SENSORS[$1]%%/*}
     s_label=${SENSORS[$1]##*/}
+    s_skipped=0
     for mon in /sys/class/hwmon/*
     do
         [ -f ${mon}/name ] || continue
-        [ "`cat ${mon}/name`" = "${s_name}" ] || continue
+        s_nametype=${s_name%%@*}
+        s_nameskip=${s_name##*@}
+        [ "`cat ${mon}/name`" = "${s_nametype}" ] || continue
+        if [ "${s_nametype}" != "${s_name}" ]
+        then
+            if [ "${s_skipped}" -ne "${s_nameskip}" ]
+            then
+                s_skipped=$((${s_skipped} + 1))
+                continue
+            fi
+        fi
         if [ "${s_label}" = "@max" ]
         then
             max=0
