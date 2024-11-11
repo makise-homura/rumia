@@ -9,7 +9,8 @@ then
     got=`date -d "$stamp" +%s`
     if [ $(($now - $got)) -lt 1200 ]
     then
-        echo $res | cut -d, -f$(($1 + 2)) | sed 's/[[:space:]]//g'
+        res=`echo $res | cut -d, -f$(($1 + 2)) | sed 's/[[:space:]]//g'`
+        echo $res | grep -q [^0-9.,] && echo 99.9 || echo $res
         exit 0
     fi
 fi
